@@ -85,36 +85,19 @@
 	
 	<dependencies>
 		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
+		  <groupId>io.bioimage</groupId>
+		  <artifactId>dl-modelrunner</artifactId>
+		  <version>0.5.11-SNAPSHOT</version>
+		</dependency>
+		<!--MODEL RUNNER-->
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>ij</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.yaml</groupId>
-			<artifactId>snakeyaml</artifactId>
+		    <groupId>net.imglib2</groupId>
+		    <artifactId>imglib2-ij</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.msgpack</groupId>
-			<artifactId>jackson-dataformat-msgpack</artifactId>
-			<version>0.9.5</version>
-		</dependency>
-		<dependency>
-			<groupId>net.java.dev.jna</groupId>
-			<artifactId>jna-platform</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.java.dev.jna</groupId>
-			<artifactId>jna</artifactId>
-		</dependency>
-		<!-- APPOSE DEPS-->
-		<dependency>
-		    <groupId>org.apache.commons</groupId>
-		    <artifactId>commons-compress</artifactId>
-		</dependency>
-		<!-- APPOSE DEPS-->
 	</dependencies>
 	<build>
   		<resources>
