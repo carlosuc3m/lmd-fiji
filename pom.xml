@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>39.0.0</version>
+		<relativePath />
+	</parent>
+
+	<groupId>org.proteovir</groupId>
+	<artifactId>lmd-fiji</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<name>LMD in Fiji</name>
+	<description>Get LMD calibrated ROIs for its microdissection with the laser.</description>
+	<url>https://github.com/carlosuc3m/lmd-fiji</url>
+	<inceptionYear>2025</inceptionYear>
+	<organization>
+		<name>proteovir</name>
+		<url>https://github.com/carlosuc3m/lmd-fiji</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>carlosuc3m</id>
+			<name>Carlos Javier Garcia Lopez de Haro</name>
+			<url>https://github.com/carlosuc3m</url>
+			<roles>
+				<role>developer</role>
+				<role>debugger</role>
+				<role>reviewer</role>
+				<role>support</role>
+				<role>maintainer</role>
+			</roles>
+		</developer>
+	</developers>
+	<contributors>
+		<contributor>
+			<name>Carlos Garcia</name>
+			<url>https://github.com/carlosuc3m</url>
+			<properties><id>carlosuc3m</id></properties>
+		</contributor>
+	</contributors>
+
+	<mailingLists>
+		<mailingList>
+			<name>GitHub Issues</name>
+			<archive>https://github.com/carlosuc3m/lmd-fiji/issues</archive>
+		</mailingList>
+	</mailingLists>
+
+	<scm>
+		<connection>scm:git:https://github.com/carlosuc3m/lmd-fiji</connection>
+		<developerConnection>scm:git:git@github.com:carlosuc3m/lmd-fiji</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/carlosuc3m/lmd-fiji</url>
+	</scm>
+	<issueManagement>
+		<system>GitHub Issues</system>
+		<url>https://github.com/carlosuc3m/lmd-fiji/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>GitHub Actions</system>
+		<url>https://github.com/carlosuc3m/lmd-fiji/actions</url>
+	</ciManagement>
+
+	<properties>
+		<package-name>org.proteovir</package-name>
+		<license.licenseName>apache_v2</license.licenseName>
+		<license.copyrightOwners>Proteovir contributors.</license.copyrightOwners>
+		<license.excludes>**/*.json</license.excludes>
+
+		<!-- NB: Deploy releases to the SciJava Maven repository. -->
+		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
+	</properties>
+	
+	<dependencies>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.yaml</groupId>
+			<artifactId>snakeyaml</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.msgpack</groupId>
+			<artifactId>jackson-dataformat-msgpack</artifactId>
+			<version>0.9.5</version>
+		</dependency>
+		<dependency>
+			<groupId>net.java.dev.jna</groupId>
+			<artifactId>jna-platform</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.java.dev.jna</groupId>
+			<artifactId>jna</artifactId>
+		</dependency>
+		<!-- APPOSE DEPS-->
+		<dependency>
+		    <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-compress</artifactId>
+		</dependency>
+		<!-- APPOSE DEPS-->
+	</dependencies>
+	<build>
+  		<resources>
+    		<resource>
+      			<directory>src/main/resources</directory>
+      			<filtering>false</filtering>
+    		</resource>
+    		<resource>
+      			<directory>src/main/resources</directory>
+      			<filtering>true</filtering>
+      			<includes>
+        			<include>.proteovir_properties</include>
+      			</includes>
+    		</resource>
+  		</resources>
+	</build>
+</project>
