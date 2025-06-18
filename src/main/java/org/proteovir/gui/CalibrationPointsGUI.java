@@ -1,8 +1,10 @@
 package org.proteovir.gui;
 
+import java.awt.Color;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -29,6 +31,8 @@ public class CalibrationPointsGUI extends JPanel {
 		imageBtn = new JButton("Add image");
 		metaBtn = new JButton("Add image metadata");
 		
+		setBorder(BorderFactory.createLineBorder(Color.black, 1));
+		
 		add(title);
 		add(imagePath);
 		add(imageBtn);
@@ -42,6 +46,24 @@ public class CalibrationPointsGUI extends JPanel {
     	addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
+                int rawW = getWidth();
+                int rawH = getHeight();
+                int inset = 2;
+                
+                int labelH = Math.max(inset, (int) (rawH / 3));
+                int imH = Math.max(inset, (int) (rawH / 3));
+                int metaH = Math.max(inset, (int) (rawH / 3));
+                
+                int y = inset;
+                title.setBounds(inset, y, rawW - 2 * inset, labelH - inset);
+                y = labelH;
+                int pathW = (int) ((rawW - inset * 3) * 0.7);
+                int btnW = (int) ((rawW - inset * 3) * 0.3);
+                imagePath.setBounds(inset, y, pathW, imH - inset);
+                imageBtn.setBounds(inset + pathW + inset, y, btnW, imH - inset);
+
+                metadataPath.setBounds(inset, y, pathW, imH - inset);
+                metaBtn.setBounds(inset + pathW + inset, y, btnW, imH - inset);
             }
         });
     }

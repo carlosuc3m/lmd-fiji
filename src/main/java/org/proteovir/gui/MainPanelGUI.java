@@ -67,7 +67,7 @@ public class MainPanelGUI extends JPanel {
                 int sideW = Math.max(0, rawW - canvasW);
 
                 canvasPanel.setBounds(0, 0, canvasW, rawH);
-                sidePanel.setBounds(sideW, 0, sideW, rawH);
+                sidePanel.setBounds(canvasW, 0, sideW, rawH);
             }
         });
     }
