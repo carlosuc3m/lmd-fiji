@@ -28,9 +28,9 @@ public class SidePanelGUI extends JPanel {
 	public SidePanelGUI() {
 		
 		statusLabel = new JLabel();
-		firstCalibration = new CalibrationPointsGUI();
-		secondCalibration = new CalibrationPointsGUI();
-		thirdCalibration = new CalibrationPointsGUI();
+		firstCalibration = new CalibrationPointsGUI(1);
+		secondCalibration = new CalibrationPointsGUI(2);
+		thirdCalibration = new CalibrationPointsGUI(3);
 		
 		imageGUI = new ImageGUI();
 		
