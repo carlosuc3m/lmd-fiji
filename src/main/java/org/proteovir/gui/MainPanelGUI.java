@@ -21,7 +21,7 @@ public class MainPanelGUI extends JPanel {
     
     SidePanelGUI sidePanel;
     
-    public static final double W_H_RATIO = 4d / 3d;
+    public static final double W_H_RATIO = 5d / 3d;
     
     private static final int MINIMUM_WIDTH = 40;
 
@@ -61,7 +61,7 @@ public class MainPanelGUI extends JPanel {
                 int rawW = getWidth();
                 int rawH = getHeight();
                 
-                int canvasW = (int) (rawW * 3 / 4);
+                int canvasW = (int) (rawW / W_H_RATIO);
                 canvasW = Math.max(1, canvasW);
                 
                 int sideW = Math.max(0, rawW - canvasW);

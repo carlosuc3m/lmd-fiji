@@ -1,8 +1,6 @@
 package org.proteovir.gui;
 
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -20,16 +18,28 @@ public class SidePanelGUI extends JPanel {
     
     private ImageGUI imageGUI;
     
+    private JButton samjBtn;
+    
+    private JButton activationBtn;
+    
+    private JLabel activationLabel;
+    
     private RoiManagerGUI roiManagerGUI;
     
     
     private static final double ROI_MANAGER_H_RATIO = 0.4d;
     
-    private static final double CAL_PANEL_H_RATIO = 0.15d;
+    private static final double CAL_PANEL_H_RATIO = 0.12d;
     
-    private static final double STATUS_PANEL_H_RATIO = 0.05d;
+    private static final double STATUS_PANEL_H_RATIO = 0.03d;
     
     private static final double IMAGE_PANEL_H_RATIO = 0.10d;
+    
+    private static final double SAMJ_BUTON_H_RATIO = 0.05d;
+    
+    private static final double ACTIVATION_BUTON_H_RATIO = 0.035d;
+    
+    private static final double ACTIVATION_LABEL_H_RATIO = 0.025d;
 
 	public SidePanelGUI() {
 		
@@ -40,6 +50,10 @@ public class SidePanelGUI extends JPanel {
 		
 		imageGUI = new ImageGUI();
 		
+		samjBtn = new JButton("SAMJ");
+		activationBtn = new JButton("Activate");
+		activationLabel = new JLabel("");
+		
 		roiManagerGUI = new RoiManagerGUI();
         
 		add(statusLabel);
@@ -47,49 +61,45 @@ public class SidePanelGUI extends JPanel {
 		add(secondCalibration);
 		add(thirdCalibration);
 		add(imageGUI);
+		add(samjBtn);
+		add(activationBtn);
+		add(activationLabel);
 		add(roiManagerGUI);
-		
-        organiseComponents();
     }
-    
-    private void organiseComponents() {
-    	addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                int rawW = getWidth();
-                int rawH = getHeight();
-                int inset = 2;
-                
-                int statusH = Math.max(inset, (int) (rawH * STATUS_PANEL_H_RATIO));
-                int calH = Math.max(inset, (int) (rawH * CAL_PANEL_H_RATIO));
-                int imH = Math.max(inset, (int) (rawH * IMAGE_PANEL_H_RATIO));
-                int roiH = Math.max(inset, (int) (rawH * ROI_MANAGER_H_RATIO));
-                                
-                int w = Math.max(inset, rawW - 2 * inset);
-                int y = inset;
-                statusLabel.setBounds(inset, y, w, statusH - inset);
-                y = statusH;
-                firstCalibration.setBounds(inset, y, w, calH - inset);
-                y = statusH + calH;
-                secondCalibration.setBounds(inset, y, w, calH - inset);
-                y = statusH + calH * 2;
-                thirdCalibration.setBounds(inset, y, w, calH - inset);
-                y = statusH + calH * 3;
-                imageGUI.setBounds(inset, y, w, imH - inset);
-                y = statusH + calH * 3 + imH;
+	
+	@Override
+	public void doLayout() {
+        int rawW = getWidth();
+        int rawH = getHeight();
+        int inset = 2;
+        
+        int statusH = Math.max(inset, (int) (rawH * STATUS_PANEL_H_RATIO));
+        int calH = Math.max(inset, (int) (rawH * CAL_PANEL_H_RATIO));
+        int imH = Math.max(inset, (int) (rawH * IMAGE_PANEL_H_RATIO));
+        int samjH = Math.max(inset, (int) (rawH * SAMJ_BUTON_H_RATIO));
+        int actH = Math.max(inset, (int) (rawH * ACTIVATION_BUTON_H_RATIO));
+        int actLabelH = Math.max(inset, (int) (rawH * ACTIVATION_LABEL_H_RATIO));
+        int roiH = Math.max(inset, (int) (rawH * ROI_MANAGER_H_RATIO));
+                        
+        int w = Math.max(inset, rawW - 2 * inset);
+        int y = inset;
+        statusLabel.setBounds(inset, y, w, statusH - inset);
+        y = statusH;
+        firstCalibration.setBounds(inset, y, w, calH - inset);
+        y = statusH + calH;
+        secondCalibration.setBounds(inset, y, w, calH - inset);
+        y = statusH + calH * 2;
+        thirdCalibration.setBounds(inset, y, w, calH - inset);
+        y = statusH + calH * 3;
+        imageGUI.setBounds(inset, y, w, imH - inset);
+        y = statusH + calH * 3 + imH;
+        samjBtn.setBounds(inset, y, w, samjH - inset);
+        y = statusH + calH * 3 + imH + samjH;
+        activationBtn.setBounds(inset, y, w, actH - inset);
+        y = statusH + calH * 3 + imH + samjH + actH;
+        activationLabel.setBounds(inset, y, w, actLabelH - inset);
+        y = statusH + calH * 3 + imH + samjH + actH + actLabelH;
 
-                roiManagerGUI.setBounds(inset, y, w, roiH - inset);
-            }
-        });
-    }
-
-	public void close() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void setCancelCallback(Runnable runnable) {
-		// TODO Auto-generated method stub
-		
+        roiManagerGUI.setBounds(inset, y, w, roiH - inset);
 	}
 }
