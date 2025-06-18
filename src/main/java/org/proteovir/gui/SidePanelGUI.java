@@ -64,7 +64,7 @@ public class SidePanelGUI extends JPanel {
                 int calH = Math.max(inset, (int) (rawH * CAL_PANEL_H_RATIO));
                 int imH = Math.max(inset, (int) (rawH * IMAGE_PANEL_H_RATIO));
                 int roiH = Math.max(inset, (int) (rawH * ROI_MANAGER_H_RATIO));
-                
+                                
                 int w = Math.max(inset, rawW - 2 * inset);
                 int y = inset;
                 statusLabel.setBounds(inset, y, w, statusH - inset);
@@ -75,7 +75,7 @@ public class SidePanelGUI extends JPanel {
                 y = statusH + calH * 2;
                 thirdCalibration.setBounds(inset, y, w, calH - inset);
                 y = statusH + calH * 3;
-                thirdCalibration.setBounds(inset, y, w, imH - inset);
+                imageGUI.setBounds(inset, y, w, imH - inset);
                 y = statusH + calH * 3 + imH;
 
                 roiManagerGUI.setBounds(inset, y, w, roiH - inset);

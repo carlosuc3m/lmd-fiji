@@ -61,9 +61,9 @@ public class CalibrationPointsGUI extends JPanel {
                 int btnW = (int) ((rawW - inset * 3) * 0.3);
                 imagePath.setBounds(inset, y, pathW, imH - inset);
                 imageBtn.setBounds(inset + pathW + inset, y, btnW, imH - inset);
-
-                metadataPath.setBounds(inset, y, pathW, imH - inset);
-                metaBtn.setBounds(inset + pathW + inset, y, btnW, imH - inset);
+                y = labelH + imH;
+                metadataPath.setBounds(inset, y, pathW, metaH - inset);
+                metaBtn.setBounds(inset + pathW + inset, y, btnW, metaH - inset);
             }
         });
     }
