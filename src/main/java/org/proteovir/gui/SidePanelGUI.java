@@ -27,9 +27,9 @@ public class SidePanelGUI extends JPanel {
     private RoiManagerGUI roiManagerGUI;
     
     
-    private static final double ROI_MANAGER_H_RATIO = 0.4d;
+    private static final double ROI_MANAGER_H_RATIO = 0.46d;
     
-    private static final double CAL_PANEL_H_RATIO = 0.12d;
+    private static final double CAL_PANEL_H_RATIO = 0.1d;
     
     private static final double STATUS_PANEL_H_RATIO = 0.03d;
     
