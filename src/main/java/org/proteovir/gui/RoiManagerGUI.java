@@ -58,16 +58,17 @@ public class RoiManagerGUI extends JPanel implements MouseWheelListener, ListSel
 		panel.setLayout(new GridLayout(nButtons, 1, 5, 0));
 		addButton("Add");
 		addButton("Delete");
-		addButton("Rename...");
-		addButton("Measure");
+		addButton("Simplify");
+		addButton("Complicate");
 		addButton("Dilate");
 		addButton("Erode");
+		addButton("Merge");
 		addButton("Export mask");
 		addButton("Export LMD");
 		showAllCheckbox.addItemListener(this);
 		panel.add(showAllCheckbox);
 		labelsCheckbox.addItemListener(this);
-		add(labelsCheckbox);
+		panel.add(labelsCheckbox);
 		add("East", panel);
 		list.remove(0);
     }
