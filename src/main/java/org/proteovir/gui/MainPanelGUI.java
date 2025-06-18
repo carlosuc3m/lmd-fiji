@@ -43,6 +43,8 @@ public class MainPanelGUI extends JPanel {
                 // You can add more custom drawing here
             }
         };
+        
+        sidePanel = new SidePanelGUI();
 
         setMinimumSize(new Dimension(MINIMUM_WIDTH, (int) (MINIMUM_WIDTH / W_H_RATIO)));
 
@@ -64,8 +66,8 @@ public class MainPanelGUI extends JPanel {
                 
                 int sideW = Math.max(0, rawW - canvasW);
 
-                canvasPanel.setBounds(0, 0, sideW, rawH);
-                sidePanel.setBounds(sideW, 0, canvasW, rawH);
+                canvasPanel.setBounds(0, 0, canvasW, rawH);
+                sidePanel.setBounds(sideW, 0, sideW, rawH);
             }
         });
     }
