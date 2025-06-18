@@ -2,13 +2,9 @@ package org.proteovir.gui;
 
 
 import java.awt.BorderLayout;
-import java.awt.Button;
-import java.awt.Checkbox;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.awt.Panel;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -18,9 +14,9 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 
-import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -28,9 +24,6 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import ij.IJ;
-import ij.Prefs;
-import ij.gui.GUI;
 
 public class RoiManagerGUI extends JPanel implements MouseWheelListener, ListSelectionListener, MouseListener, ActionListener, ItemListener {
 
@@ -39,60 +32,51 @@ public class RoiManagerGUI extends JPanel implements MouseWheelListener, ListSel
     private DefaultListModel<String> listModel;
 	private JList<String> list;
 	private JPanel panel;
-	private Checkbox showAllCheckbox = new Checkbox("Show All", false);
-	private Checkbox labelsCheckbox = new Checkbox("Labels", false);
-	private JButton moreButton;
+	private JCheckBox showAllCheckbox = new JCheckBox("Show All", false);
+	private JCheckBox labelsCheckbox = new JCheckBox("Labels", false);
 
 	private static final int BUTTONS = 11;
-	private static String moreButtonLabel = "More "+'\u00bb';
 	
 	
-	@SuppressWarnings("rawtypes")
 	public RoiManagerGUI() {
-		list = new JList();
-		listModel = new DefaultListModel();
+		list = new JList<String>();
+		listModel = new DefaultListModel<String>();
 		list.setModel(listModel);
 		setLayout(new BorderLayout());
-		listModel = new DefaultListModel();
+		listModel = new DefaultListModel<String>();
 		list.setModel(listModel);
-		GUI.scale(list);
 		list.setPrototypeCellValue("0000-0000-0000 ");
 		list.addListSelectionListener(this);
 		list.addMouseListener(this);
 		list.addMouseWheelListener(this);
 		list.setBackground(Color.white);
-		if (IJ.isLinux()) list.setBackground(Color.white);
+		list.setBackground(Color.white);
 		JScrollPane scrollPane = new JScrollPane(list, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		add("Center", scrollPane);
 		panel = new JPanel();
 		int nButtons = BUTTONS;
 		panel.setLayout(new GridLayout(nButtons, 1, 5, 0));
-		addButton("Add [t]");
-		addButton("Update");
+		addButton("Add");
 		addButton("Delete");
 		addButton("Rename...");
 		addButton("Measure");
-		addButton("Deselect");
-		addButton("Properties...");
-		addButton("Flatten [F]");
-		addButton(moreButtonLabel);
+		addButton("Dilate");
+		addButton("Erode");
+		addButton("Export mask");
+		addButton("Export LMD");
 		showAllCheckbox.addItemListener(this);
 		panel.add(showAllCheckbox);
 		labelsCheckbox.addItemListener(this);
 		add(labelsCheckbox);
 		add("East", panel);
-		Dimension size = getSize();
-		if (size.width>270)
-			setSize(size.width-40, size.height);
 		list.remove(0);
     }
 
 	void addButton(String label) {
 		JButton b = new JButton(label);
 		b.addActionListener(this);
-		b.addKeyListener(IJ.getInstance());
+		// TODO remove b.addKeyListener(IJ.getInstance());
 		b.addMouseListener(this);
-		if (label.equals(moreButtonLabel)) moreButton = b;
 		panel.add(b);
 	}
 
