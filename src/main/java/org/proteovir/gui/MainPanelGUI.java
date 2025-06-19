@@ -8,6 +8,9 @@ import java.awt.event.ComponentEvent;
 
 import javax.swing.JPanel;
 
+import org.proteovir.roimanager.ConsumerInterface;
+
+
 /**
  * A simple Swing application demonstrating a 4:3 window with:
  * - A square canvas on the left that fills the full height
@@ -25,7 +28,7 @@ public class MainPanelGUI extends JPanel {
     
     private static final int MINIMUM_WIDTH = 40;
 
-    public MainPanelGUI() {
+    public MainPanelGUI(ConsumerInterface consumer) {
 
         // Use BorderLayout to place canvas on the left and buttons on the right
         setLayout(null);
@@ -44,7 +47,7 @@ public class MainPanelGUI extends JPanel {
             }
         };
         
-        sidePanel = new SidePanelGUI();
+        sidePanel = new SidePanelGUI(consumer);
 
         setMinimumSize(new Dimension(MINIMUM_WIDTH, (int) (MINIMUM_WIDTH / W_H_RATIO)));
 

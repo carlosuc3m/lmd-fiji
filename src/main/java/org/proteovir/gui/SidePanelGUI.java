@@ -4,6 +4,9 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.proteovir.roimanager.ConsumerInterface;
+import org.proteovir.roimanager.RoiManager;
+
 public class SidePanelGUI extends JPanel {
 
     private static final long serialVersionUID = -8405747451234902128L;
@@ -24,7 +27,7 @@ public class SidePanelGUI extends JPanel {
     
     private JLabel activationLabel;
     
-    private RoiManagerGUI roiManagerGUI;
+    private RoiManager roiManager;
     
     
     private static final double ROI_MANAGER_H_RATIO = 0.46d;
@@ -41,7 +44,7 @@ public class SidePanelGUI extends JPanel {
     
     private static final double ACTIVATION_LABEL_H_RATIO = 0.025d;
 
-	public SidePanelGUI() {
+	public SidePanelGUI(ConsumerInterface consumer) {
 		
 		statusLabel = new JLabel("Calibration points not set");
 		firstCalibration = new CalibrationPointsGUI(1);
@@ -54,7 +57,7 @@ public class SidePanelGUI extends JPanel {
 		activationBtn = new JButton("Activate");
 		activationLabel = new JLabel("");
 		
-		roiManagerGUI = new RoiManagerGUI();
+		roiManager = new RoiManager(consumer);
         
 		add(statusLabel);
 		add(firstCalibration);
@@ -64,7 +67,7 @@ public class SidePanelGUI extends JPanel {
 		add(samjBtn);
 		add(activationBtn);
 		add(activationLabel);
-		add(roiManagerGUI);
+		add(roiManager);
     }
 	
 	@Override
@@ -100,6 +103,6 @@ public class SidePanelGUI extends JPanel {
         activationLabel.setBounds(inset, y, w, actLabelH - inset);
         y = statusH + calH * 3 + imH + samjH + actH + actLabelH;
 
-        roiManagerGUI.setBounds(inset, y, w, roiH - inset);
+        roiManager.setBounds(inset, y, w, roiH - inset);
 	}
 }

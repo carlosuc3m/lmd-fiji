@@ -1,5 +1,6 @@
 package org.proteovir.gui;
 
+import org.proteovir.roimanager.ConsumerInterface;
 
 /**
  * A simple Swing application demonstrating a 4:3 window with:
@@ -10,7 +11,8 @@ public class MainPanel extends MainPanelGUI {
 
     private static final long serialVersionUID = 8550100052731297639L;
 
-	public MainPanel() {
+	public MainPanel(ConsumerInterface consumer) {
+		super(consumer);
     }
 
 	public void close() {

@@ -22,7 +22,7 @@ public class LMD_Plugin implements PlugIn {
         SwingUtilities.invokeLater(new Runnable() {
         	public void run() {
             	ij.plugin.frame.PlugInFrame frame = new ij.plugin.frame.PlugInFrame("LMD Segmentator");
-            	MainPanel gui = new MainPanel();
+            	MainPanel gui = new MainPanel(null);
                 frame.add(gui);
                 frame.pack();
                 frame.setSize(getInitialDims());
