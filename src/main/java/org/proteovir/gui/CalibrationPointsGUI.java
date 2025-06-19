@@ -1,11 +1,17 @@
 package org.proteovir.gui;
 
 import java.awt.Color;
+import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
+import java.io.File;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.TransferHandler;
 
 public class CalibrationPointsGUI extends JPanel {
 
@@ -37,6 +43,94 @@ public class CalibrationPointsGUI extends JPanel {
 		add(imageBtn);
 		add(metadataPath);
 		add(metaBtn);
+		
+		imageBtn.addActionListener(e -> {
+		    JFileChooser chooser = new JFileChooser();
+		    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+		    int result = chooser.showOpenDialog(imageBtn.getParent());
+		    if (result == JFileChooser.APPROVE_OPTION) {
+		        File selected = chooser.getSelectedFile();
+		        imagePath.setText(selected.getAbsolutePath());
+		    }
+		});
+		
+		metaBtn.addActionListener(e -> {
+		    JFileChooser chooser = new JFileChooser();
+		    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+		    int result = chooser.showOpenDialog(metaBtn.getParent());
+		    if (result == JFileChooser.APPROVE_OPTION) {
+		        File selected = chooser.getSelectedFile();
+		        metadataPath.setText(selected.getAbsolutePath());
+		    }
+		});
+		
+		imagePath.setTransferHandler(new TransferHandler() {
+			private static final long serialVersionUID = -7894592726795662573L;
+
+			@Override
+		    public boolean canImport(TransferSupport support) {
+		        return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
+		    }
+
+		    @Override
+		    public boolean importData(TransferSupport support) {
+		        if (!canImport(support)) return false;
+		        try {
+		            @SuppressWarnings("unchecked")
+		            List<File> files = (List<File>) 
+		                support.getTransferable()
+		                       .getTransferData(DataFlavor.javaFileListFlavor);
+
+		            // Reject if not exactly one
+		            if (files.size() != 1) {
+		                Toolkit.getDefaultToolkit().beep();
+		                return false;
+		            }
+
+		            File f = files.get(0);
+		            imagePath.setText(f.getAbsolutePath());
+		            return true;
+		        } catch (Exception ex) {
+		            ex.printStackTrace();
+		            return false;
+		        }
+		    }
+		});
+		
+		metadataPath.setTransferHandler(new TransferHandler() {
+		    private static final long serialVersionUID = -7894592726795662573L;
+
+			@Override
+		    public boolean canImport(TransferSupport support) {
+		        return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
+		    }
+
+		    @Override
+		    public boolean importData(TransferSupport support) {
+		        if (!canImport(support)) return false;
+		        try {
+		            @SuppressWarnings("unchecked")
+		            List<File> files = (List<File>) 
+		                support.getTransferable()
+		                       .getTransferData(DataFlavor.javaFileListFlavor);
+
+		            // Reject if not exactly one
+		            if (files.size() != 1) {
+		                Toolkit.getDefaultToolkit().beep();
+		                return false;
+		            }
+
+		            File f = files.get(0);
+		            metadataPath.setText(f.getAbsolutePath());
+		            return true;
+		        } catch (Exception ex) {
+		            ex.printStackTrace();
+		            return false;
+		        }
+		    }
+		});
     }
 	
 	@Override

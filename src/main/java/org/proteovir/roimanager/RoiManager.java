@@ -26,15 +26,16 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import ai.nets.samj.annotation.Mask;
+import ij.gui.Roi;
 
 
 public class RoiManager extends JPanel implements MouseWheelListener, ListSelectionListener, MouseListener, ActionListener, ItemListener {
 
     private static final long serialVersionUID = -8405747451234902128L;
     
-    ConsumerInterface consumer;
+    private ConsumerInterface consumer;
     
-    List<Mask> rois = new ArrayList<Mask>();
+    private List<Mask> rois = new ArrayList<Mask>();
     
     protected DefaultListModel<String> listModel;
     protected JList<String> list;
@@ -75,12 +76,22 @@ public class RoiManager extends JPanel implements MouseWheelListener, ListSelect
 		list.remove(0);
     }
 
-	void addButton(String label) {
+	private void addButton(String label) {
 		JButton b = new JButton(label);
 		b.addActionListener(this);
 		// TODO remove b.addKeyListener(IJ.getInstance());
 		b.addMouseListener(this);
 		panel.add(b);
+	}
+	
+	/**
+	 * Returns the ROIs as an array.
+	 * 
+	 * @return the ROIs as an array
+	 */
+	public synchronized Mask[] getRoisAsArray() {
+		Mask[] array = new Mask[rois.size()];
+		return (Mask[])rois.toArray(array);
 	}
 
 	/** Returns the ROI count. */
