@@ -99,6 +99,7 @@
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>ij</artifactId>
+			<version>1.54p</version>
 		</dependency>
 		<dependency>
 		    <groupId>net.imglib2</groupId>
