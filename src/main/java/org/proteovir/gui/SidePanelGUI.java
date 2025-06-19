@@ -3,6 +3,7 @@ package org.proteovir.gui;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
 import org.proteovir.roimanager.ConsumerInterface;
 import org.proteovir.roimanager.RoiManager;
@@ -56,6 +57,8 @@ public class SidePanelGUI extends JPanel {
 		samjBtn = new JButton("SAMJ");
 		activationBtn = new JButton("Activate");
 		activationLabel = new JLabel("");
+		activationLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		activationLabel.setVerticalAlignment(SwingConstants.CENTER);
 		
 		roiManager = new RoiManager(consumer);
         

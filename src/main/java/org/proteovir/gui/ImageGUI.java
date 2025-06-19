@@ -22,11 +22,18 @@ public class ImageGUI extends JPanel {
     PlaceholderTextField metadataPath;
     JButton metaBtn;
 
+    private static final String SET_TEXT = "<html><span style=\\\"color: green;\\\">Target image set</span></html>";
+    private static final String NOT_SET_TEXT = ""
+    		+ "<html>"
+            + "Target image "
+            + "<span style=\"color: red;\">not set</span>"
+            + "</html>";
+
 	private static final long serialVersionUID = 1679779479777549841L;
 
 	public ImageGUI() {
         setLayout(null);
-		title = new JLabel("Target image not set");
+		title = new JLabel(NOT_SET_TEXT);
 		imagePath = new PlaceholderTextField("Choose target image");
 		metadataPath = new PlaceholderTextField("Choose metadata for target image");
 
@@ -156,5 +163,13 @@ public class ImageGUI extends JPanel {
 
 	public void setOpenImageCallback(Consumer<File> openIm) {
 		openImageCallback = openIm;
+	}
+
+	public void setTargetSet(boolean b) {
+		if (b)
+			title.setText(SET_TEXT);
+		else
+			title.setText(NOT_SET_TEXT);
+		
 	}
 }
