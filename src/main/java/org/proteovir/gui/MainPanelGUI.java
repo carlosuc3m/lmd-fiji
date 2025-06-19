@@ -22,7 +22,7 @@ public class MainPanelGUI extends JPanel {
     
     JPanel canvasPanel;
     
-    SidePanelGUI sidePanel;
+    SidePanel sidePanel;
     
     public static final double W_H_RATIO = 5d / 3d;
     
@@ -34,20 +34,21 @@ public class MainPanelGUI extends JPanel {
         setLayout(null);
 
         // Square canvas panel
-        canvasPanel = new JPanel() {
-            private static final long serialVersionUID = -7553678106776829518L;
+        canvasPanel = new JPanel(null) {
+            private static final long serialVersionUID = -2243479840349844620L;
 
 			@Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                // Example drawing: fill background
-                g.setColor(Color.LIGHT_GRAY);
-                g.fillRect(0, 0, getWidth(), getHeight());
-                // You can add more custom drawing here
+                // just paint a gray bg if nothing in it
+                if (getComponentCount() == 0) {
+                    g.setColor(Color.LIGHT_GRAY);
+                    g.fillRect(0, 0, getWidth(), getHeight());
+                }
             }
         };
         
-        sidePanel = new SidePanelGUI(consumer);
+        sidePanel = new SidePanel(consumer);
 
         setMinimumSize(new Dimension(MINIMUM_WIDTH, (int) (MINIMUM_WIDTH / W_H_RATIO)));
 

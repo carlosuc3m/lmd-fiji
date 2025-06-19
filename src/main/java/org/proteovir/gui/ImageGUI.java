@@ -4,15 +4,17 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.io.File;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.TransferHandler;
-import javax.swing.TransferHandler.TransferSupport;
 
 public class ImageGUI extends JPanel {
+	
+	Consumer<File> openImageCallback;
     
     JLabel title;
     PlaceholderTextField imagePath;
@@ -45,6 +47,8 @@ public class ImageGUI extends JPanel {
 		    if (result == JFileChooser.APPROVE_OPTION) {
 		        File selected = chooser.getSelectedFile();
 		        imagePath.setText(selected.getAbsolutePath());
+	            if (openImageCallback != null)
+	            	openImageCallback.accept(selected);
 		    }
 		});
 		
@@ -84,6 +88,8 @@ public class ImageGUI extends JPanel {
 
 		            File f = files.get(0);
 		            imagePath.setText(f.getAbsolutePath());
+		            if (openImageCallback != null)
+		            	openImageCallback.accept(f);
 		            return true;
 		        } catch (Exception ex) {
 		            ex.printStackTrace();
@@ -146,5 +152,9 @@ public class ImageGUI extends JPanel {
         y = labelH + imH;
         metadataPath.setBounds(inset, y, pathW, metaH - inset);
         metaBtn.setBounds(inset + pathW + inset, y, btnW, metaH - inset);
+	}
+
+	public void setOpenImageCallback(Consumer<File> openIm) {
+		openImageCallback = openIm;
 	}
 }

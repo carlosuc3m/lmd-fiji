@@ -11,23 +11,23 @@ public class SidePanelGUI extends JPanel {
 
     private static final long serialVersionUID = -8405747451234902128L;
     
-    private JLabel statusLabel;
+    protected JLabel statusLabel;
     
-    private CalibrationPointsGUI firstCalibration;
+    protected CalibrationPointsGUI firstCalibration;
     
-    private CalibrationPointsGUI secondCalibration;
+    protected CalibrationPointsGUI secondCalibration;
     
-    private CalibrationPointsGUI thirdCalibration;
+    protected CalibrationPointsGUI thirdCalibration;
     
-    private ImageGUI imageGUI;
+    protected ImageGUI imageGUI;
     
-    private JButton samjBtn;
+    protected JButton samjBtn;
     
-    private JButton activationBtn;
+    protected JButton activationBtn;
     
-    private JLabel activationLabel;
+    protected JLabel activationLabel;
     
-    private RoiManager roiManager;
+    protected RoiManager roiManager;
     
     
     private static final double ROI_MANAGER_H_RATIO = 0.46d;

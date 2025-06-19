@@ -5,7 +5,7 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.SwingUtilities;
 
-import org.proteovir.gui.MainPanel;
+import org.proteovir.gui.SidePanel;
 
 import ij.ImageJ;
 import ij.plugin.PlugIn;
@@ -22,7 +22,7 @@ public class LMD_Plugin implements PlugIn {
         SwingUtilities.invokeLater(new Runnable() {
         	public void run() {
             	ij.plugin.frame.PlugInFrame frame = new ij.plugin.frame.PlugInFrame("LMD Segmentator");
-            	MainPanel gui = new MainPanel(null);
+            	SidePanel gui = new SidePanel(null);
                 frame.add(gui);
                 frame.pack();
                 frame.setSize(getInitialDims());
@@ -49,6 +49,7 @@ public class LMD_Plugin implements PlugIn {
             h = screenH;
             w = h * 4 / 3;
         }
-        return new Dimension((int) (w * 0.8d), (int) (h * 0.8));
+        //return new Dimension((int) (w * 0.8d), (int) (h * 0.8));
+        return new Dimension((int) (w * 3 * 0.8d / 5), (int) (h * 0.8));
 	}
 }
