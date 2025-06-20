@@ -1,26 +1,43 @@
 package org.proteovir.gui;
 
+import java.awt.Color;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.function.Function;
 
 import javax.swing.SwingUtilities;
 
 import org.proteovir.roimanager.ConsumerInterface;
 
+import ai.nets.samj.annotation.Mask;
 import ai.nets.samj.communication.model.SAM2Tiny;
+import ai.nets.samj.models.AbstractSamJ;
 import ai.nets.samj.ui.SAMJLogger;
 import ij.IJ;
 import ij.ImageListener;
 import ij.ImagePlus;
+import ij.gui.PolygonRoi;
+import ij.gui.Roi;
+import ij.gui.Toolbar;
+import io.bioimage.modelrunner.system.PlatformDetection;
+import net.imglib2.FinalInterval;
+import net.imglib2.Interval;
+import net.imglib2.Localizable;
+import net.imglib2.Point;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.util.Cast;
 
-public class SidePanel extends SidePanelGUI implements ActionListener, ImageListener {
+public class SidePanel extends SidePanelGUI implements ActionListener, ImageListener, MouseListener {
 
     private static final long serialVersionUID = -8405747451234902128L;
     
@@ -141,6 +158,88 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	}
 
 	@Override
+	public void mouseReleased(MouseEvent e) {
+		if (!wasActive || !alreadyFocused || imp.getRoi() == null)
+			return;
+		if (Toolbar.getToolName().equals("rectangle")) {
+			annotateRect();
+		} else if (Toolbar.getToolName().equals("point") || Toolbar.getToolName().equals("multipoint")) {
+			annotatePoints(e);
+		} else {
+			return;
+		}
+		if (!isCollectingPoints) imp.deleteRoi();
+	}
+	
+	private void annotateRect() {
+		final Roi roi = imp.getRoi();
+		final Rectangle rectBounds = roi.getBounds();
+		final Interval rectInterval = new FinalInterval(
+				new long[] { rectBounds.x, rectBounds.y },
+				new long[] { rectBounds.x+rectBounds.width-1, rectBounds.y+rectBounds.height-1 } );
+		submitRectPrompt(rectInterval);
+	}
+	
+	private void submitRectPrompt(Interval rectInterval) {
+		try {
+			addToRoiManager(this.samj.fetch2dSegmentation(rectInterval), "rect");
+		} catch (Exception ex) {
+			ex.printStackTrace();;
+		}
+	}
+	
+	private void annotatePoints(MouseEvent e) {
+		final Roi roi = imp.getRoi();
+		if ((e.isControlDown() && !PlatformDetection.isMacOS()) || (e.isMetaDown() && PlatformDetection.isMacOS())) {
+			//add point to the list only
+			isCollectingPoints = true;
+			Iterator<java.awt.Point> iterator = roi.iterator();
+			java.awt.Point p = iterator.next();
+			while (iterator.hasNext()) p = iterator.next();
+			collectedPoints.add( new Point(p.x,p.y) );
+		} else {
+			isCollectingPoints = false;
+			//collect this last one
+			Iterator<java.awt.Point> iterator = roi.iterator();
+			java.awt.Point p = iterator.next();
+			while (iterator.hasNext()) p = iterator.next();
+			collectedPoints.add( new Point(p.x,p.y) );
+			submitAndClearPoints();
+		}
+	}
+
+	/**
+	 * Send the point prompts to SAM and clear the lists collecting them
+	 */
+	private void submitAndClearPoints() {
+		if (this.samj == null) return;
+		if (collectedPoints.size() == 0) return;
+
+		//TODO log.info("Image window: Processing now points, this count: "+collectedPoints.size());
+		isCollectingPoints = false;
+		imp.deleteRoi();
+		Rectangle zoomedRectangle = this.imp.getCanvas().getSrcRect();
+		try {
+			if (imp.getWidth() * imp.getHeight() > Math.pow(AbstractSamJ.MAX_ENCODED_AREA_RS, 2)
+					|| imp.getWidth() > AbstractSamJ.MAX_ENCODED_SIDE || imp.getHeight() > AbstractSamJ.MAX_ENCODED_SIDE)
+				addToRoiManager(samj.fetch2dSegmentation(collectedPoints, collecteNegPoints, zoomedRectangle),
+						(collectedPoints.size() > 1 ? "points" : "point"));
+			else
+				addToRoiManager(samj.fetch2dSegmentation(collectedPoints, collecteNegPoints),
+						(collectedPoints.size() > 1 ? "points" : "point"));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		collectedPoints = new ArrayList<Localizable>();
+		collecteNegPoints = new ArrayList<Localizable>();
+		temporalROIs = new ArrayList<Roi>();
+		temporalNegROIs = new ArrayList<Roi>();
+	}
+	
+	void addToRoiManager(final List<Mask> polys, final String promptShape) {
+	}
+
+	@Override
 	public void imageOpened(ImagePlus imp) {
 		if (this.imp != null && imp.equals(this.imp))
 			return;
@@ -184,5 +283,17 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 
 	@Override
 	public void imageUpdated(ImagePlus imp) {
+	}
+	@Override
+	public void mouseClicked(MouseEvent e) {		
+	}
+	@Override
+	public void mousePressed(MouseEvent e) {		
+	}
+	@Override
+	public void mouseEntered(MouseEvent e) {		
+	}
+	@Override
+	public void mouseExited(MouseEvent e) {		
 	}
 }
