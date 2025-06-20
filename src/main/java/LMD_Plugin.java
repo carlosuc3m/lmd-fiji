@@ -34,7 +34,6 @@ public class LMD_Plugin implements PlugIn {
                     	gui.close();
                     }
                 });
-    	    	gui.setCancelCallback(() -> frame.dispose());
     	    	}
         	});
 	}

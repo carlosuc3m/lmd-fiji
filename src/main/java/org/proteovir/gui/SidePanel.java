@@ -110,13 +110,8 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	}
 
 	public void close() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void setCancelCallback(Runnable runnable) {
-		// TODO Auto-generated method stub
-		
+		if (samj != null && samj.isLoaded())
+			samj.closeProcess();
 	}
 
 	@Override
