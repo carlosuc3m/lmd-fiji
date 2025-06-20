@@ -13,6 +13,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.TransferHandler;
 
+import org.proteovir.gui.components.PlaceholderTextField;
+
 public class CalibrationPointsGUI extends JPanel {
 
     private static final long serialVersionUID = -8405747451234902128L;

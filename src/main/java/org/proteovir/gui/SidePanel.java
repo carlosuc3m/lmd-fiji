@@ -15,6 +15,7 @@ import ai.nets.samj.ui.SAMJLogger;
 import ij.IJ;
 import ij.ImageListener;
 import ij.ImagePlus;
+import ij.gui.Toolbar;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.util.Cast;
 
@@ -28,7 +29,17 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
     
     private static final String LOST_FOCUS = ""
     		+ "<html>"
-    		+ "<span style=\"color: orange;\">Warning: Select again target image</span>"
+    		+ "<span style=\"color: orange;\">&#9888; Select again target image</span>"
+    		+ "</html>";
+    
+    private static final String ONLY_PROMPTS = ""
+    		+ "<html>"
+    		+ "<font color='orange'>&#9888; Only rect and points!</font>"
+    		+ "</html>";
+    
+    private static final String ACTIVATE_TO_SEGMENT = ""
+    		+ "<html>"
+    		+ "<span style=\"color: green;\">Activate to start annotating</span>"
     		+ "</html>";
     
     private static final SAMJLogger LOGGER = new SAMJLogger() {
@@ -79,7 +90,25 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		this.imageGUI.setOpenImageCallback(openIm);
 	}
 	
+	private boolean isValidPromptSelected() {
+		return Toolbar.getToolName().equals("rectangle")
+				 || Toolbar.getToolName().equals("point")
+				 || Toolbar.getToolName().equals("multipoint");
+	}
+	
 	private void changeOnFocusGained(ImagePlus imp) {
+		this.activationLabel.setText("");
+		this.samjBtn.setEnabled(true);
+		this.samjBtn.setSelected(samj != null && samj.isLoaded());
+		this.activationBtn.setSelected(false);
+		if (isValidPromptSelected()) {
+			this.activationBtn.setEnabled(true);
+			this.activationLabel.setText(ACTIVATE_TO_SEGMENT);
+		} else {
+			this.activationBtn.setEnabled(false);
+			this.activationLabel.setText(ONLY_PROMPTS);
+		}
+		
 		
 	}
 
@@ -95,7 +124,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (samj == null)
+		if (samj == null || !samj.isLoaded())
 			samj = new SAM2Tiny();
 		new Thread(() -> {
 			try {
@@ -115,8 +144,9 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	public void imageClosed(ImagePlus imp) {
 		if (!imp.equals(this.imp))
 			return;
+		if (samj != null)
+			this.samj.closeProcess();
 		this.imageGUI.setTargetSet(false);
-		this.samj.closeProcess();
 		this.activationBtn.setEnabled(false);
 		this.samjBtn.setEnabled(false);
 		this.imageGUI.imagePath.setText("");

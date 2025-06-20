@@ -1,4 +1,4 @@
-package org.proteovir.gui;
+package org.proteovir.gui.components;
 
 import java.awt.Color;
 import java.awt.FontMetrics;
@@ -13,7 +13,7 @@ public class PlaceholderTextField extends JTextField {
 	private String placeholder;
     private Color placeholderColor;
 
-    protected PlaceholderTextField(String placeholder) {
+    public PlaceholderTextField(String placeholder) {
         this.placeholder = placeholder;
         this.placeholderColor = Color.LIGHT_GRAY;
     }
