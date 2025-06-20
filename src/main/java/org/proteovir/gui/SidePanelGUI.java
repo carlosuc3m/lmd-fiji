@@ -143,4 +143,16 @@ public class SidePanelGUI extends JPanel {
 
         roiManager.setBounds(inset, y, w, roiH - inset);
 	}
+	
+	protected void blockToEncode(boolean block) {
+		this.samjBtn.setEnabled(!block);
+		this.activationBtn.setEnabled(!block);
+		
+		this.firstCalibration.block(block);
+		this.secondCalibration.block(block);
+		this.thirdCalibration.block(block);
+		
+		this.imageGUI.block(block);
+		this.roiManager.block(block);
+	}
 }

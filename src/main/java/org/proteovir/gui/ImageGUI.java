@@ -176,6 +176,14 @@ public class ImageGUI extends JPanel {
 			title.setText(SET_TEXT);
 		else
 			title.setText(NOT_SET_TEXT);
-		
+	}
+	
+	public void block(boolean block) {
+		this.imageBtn.setEnabled(!block);
+		this.metaBtn.setEnabled(!block);
+		this.imagePath.setEditable(!block);
+		this.imagePath.setEnabled(!block);
+		this.metadataPath.setEditable(!block);
+		this.metadataPath.setEnabled(!block);
 	}
 }

@@ -170,6 +170,14 @@ public class CalibrationPointsGUI extends JPanel {
 			title.setText(String.format(SET_TEXT, n));
 		else
 			title.setText(String.format(NOT_SET_TEXT, n));
-		
+	}
+	
+	public void block(boolean block) {
+		this.imageBtn.setEnabled(!block);
+		this.metaBtn.setEnabled(!block);
+		this.imagePath.setEditable(!block);
+		this.imagePath.setEnabled(!block);
+		this.metadataPath.setEditable(!block);
+		this.metadataPath.setEnabled(!block);
 	}
 }

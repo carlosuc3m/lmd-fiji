@@ -1,9 +1,6 @@
 package org.proteovir.roimanager;
 
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -15,21 +12,14 @@ import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import ai.nets.samj.annotation.Mask;
-import ij.gui.Roi;
 
 
-public class RoiManager extends JPanel implements MouseWheelListener, ListSelectionListener, MouseListener, ActionListener, ItemListener {
+public class RoiManager extends RoiManagerGUI implements MouseWheelListener, ListSelectionListener, MouseListener, ActionListener, ItemListener {
 
     private static final long serialVersionUID = -8405747451234902128L;
     
@@ -37,47 +27,14 @@ public class RoiManager extends JPanel implements MouseWheelListener, ListSelect
     
     private List<Mask> rois = new ArrayList<Mask>();
     
-    protected DefaultListModel<String> listModel;
-    protected JList<String> list;
-    protected JPanel panel;
-    protected JCheckBox showAllCheckbox = new JCheckBox("Show All", true);
-    protected JCheckBox labelsCheckbox = new JCheckBox("Labels", true);
-
-	private static final int BUTTONS = 11;
-	
 	
 	public RoiManager(ConsumerInterface consumer) {
 		this.consumer = consumer;
-		list = new JList<String>();
-		listModel = new DefaultListModel<String>();
-		list.setModel(listModel);
-		setLayout(new BorderLayout());
-		listModel = new DefaultListModel<String>();
-		list.setModel(listModel);
-		list.setPrototypeCellValue("0000-0000-0000 ");
-		list.setBackground(Color.white);
-		JScrollPane scrollPane = new JScrollPane(list, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		add("Center", scrollPane);
-		panel = new JPanel();
-		int nButtons = BUTTONS;
-		panel.setLayout(new GridLayout(nButtons, 1, 5, 0));
-		addButton("Add");
-		addButton("Delete");
-		addButton("Simplify");
-		addButton("Complicate");
-		addButton("Dilate");
-		addButton("Erode");
-		addButton("Merge");
-		addButton("Export mask");
-		addButton("Export LMD");
-		panel.add(showAllCheckbox);
-		panel.add(labelsCheckbox);
-		add("East", panel);
-		list.remove(0);
     }
 
-	private void addButton(String label) {
+	protected void addButton(String label) {
 		JButton b = new JButton(label);
+		btns.add(b);
 		b.addActionListener(this);
 		// TODO remove b.addKeyListener(IJ.getInstance());
 		b.addMouseListener(this);

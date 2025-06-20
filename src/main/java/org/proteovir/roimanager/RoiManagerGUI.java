@@ -7,8 +7,11 @@ import java.awt.GridLayout;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelListener;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -26,6 +29,8 @@ public abstract class RoiManagerGUI extends JPanel implements ListSelectionListe
     protected JPanel panel;
     protected JCheckBox showAllCheckbox = new JCheckBox("Show All", true);
     protected JCheckBox labelsCheckbox = new JCheckBox("Labels", true);
+    
+    protected List<JButton> btns = new ArrayList<JButton>();
 
 	private static final int BUTTONS = 11;
 	
@@ -65,6 +70,15 @@ public abstract class RoiManagerGUI extends JPanel implements ListSelectionListe
 		labelsCheckbox.addItemListener(this);
 		showAllCheckbox.addItemListener(this);
     }
+	
+	public void block(boolean block) {
+		for (JButton b : btns)
+			b.setEnabled(!block);
+		list.setEnabled(!block);
+		showAllCheckbox.setEnabled(!block);
+		labelsCheckbox.setEnabled(!block);
+		
+	}
 
-	public abstract void addButton(String label);
+	protected abstract void addButton(String label);
 }
