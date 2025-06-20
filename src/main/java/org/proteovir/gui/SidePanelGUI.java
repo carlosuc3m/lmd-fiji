@@ -1,10 +1,13 @@
 package org.proteovir.gui;
 
+import java.awt.Color;
+
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import org.proteovir.gui.components.ColoredButton;
 import org.proteovir.roimanager.ConsumerInterface;
 import org.proteovir.roimanager.RoiManager;
 
@@ -54,8 +57,10 @@ public class SidePanelGUI extends JPanel {
 		
 		imageGUI = new ImageGUI();
 		
-		samjBtn = new JButton("SAMJ");
-		activationBtn = new JButton("Activate");
+		samjBtn = new ColoredButton("SAMJ", new Color(150, 255, 150), Color.LIGHT_GRAY,
+				new Color(190, 255, 190), new Color(220, 220, 220));
+		activationBtn =  new ColoredButton("Activate", new Color(150, 255, 150), Color.LIGHT_GRAY,
+				new Color(190, 255, 190), new Color(220, 220, 220));
 		activationLabel = new JLabel("");
 		activationLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		activationLabel.setVerticalAlignment(SwingConstants.CENTER);
