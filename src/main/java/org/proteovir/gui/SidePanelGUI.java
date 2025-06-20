@@ -6,14 +6,19 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 import org.proteovir.gui.components.ColoredButton;
 import org.proteovir.roimanager.ConsumerInterface;
 import org.proteovir.roimanager.RoiManager;
 
+import ij.gui.Toolbar;
+
 public class SidePanelGUI extends JPanel {
 
     private static final long serialVersionUID = -8405747451234902128L;
+    
+    protected boolean wasActive = false;
     
     protected JLabel statusLabel;
     
@@ -35,7 +40,7 @@ public class SidePanelGUI extends JPanel {
     
     protected static final String LOST_FOCUS = ""
     		+ "<html>"
-    		+ "<span style=\"color: orange;\">&#9888; Select again target image</span>"
+    		+ "<span style=\"color: orange;\">&#9888; Focus again on target image</span>"
     		+ "</html>";
     
     protected static final String ONLY_PROMPTS = ""
@@ -50,7 +55,7 @@ public class SidePanelGUI extends JPanel {
     
     protected static final String ACTIVATE_TO_SEGMENT = ""
     		+ "<html>"
-    		+ "<span style=\"color: green;\">Activate to start annotating</span>"
+    		+ "<span style=\"color: blue;\">Activate to start annotating</span>"
     		+ "</html>";
     
     protected static final String SAMJ = ""
@@ -61,6 +66,16 @@ public class SidePanelGUI extends JPanel {
     protected static final String READY = ""
     		+ "<html>"
     		+ "<span style=\"color: green;\">Ready to annotate</span>"
+    		+ "</html>";
+    
+    protected static final String ENCODING = ""
+    		+ "<html>"
+    		+ "<span style=\"color: gray;\">Processing...</span>"
+    		+ "</html>";
+    
+    protected static final String ERROR_ENCODING = ""
+    		+ "<html>"
+    		+ "<span style=\"color: red;\">&#9888; Error running SAMJ</span>"
     		+ "</html>";
     
     
@@ -96,6 +111,7 @@ public class SidePanelGUI extends JPanel {
 		activationLabel.setVerticalAlignment(SwingConstants.CENTER);
 		
 		roiManager = new RoiManager(consumer);
+		roiManager.block(true);
         
 		add(statusLabel);
 		add(firstCalibration);
@@ -154,5 +170,33 @@ public class SidePanelGUI extends JPanel {
 		
 		this.imageGUI.block(block);
 		this.roiManager.block(block);
+	}
+	
+	protected boolean isValidPromptSelected() {
+		return Toolbar.getToolName().equals("rectangle")
+				 || Toolbar.getToolName().equals("point")
+				 || Toolbar.getToolName().equals("multipoint");
+	}
+	
+	protected void guiAfterEnconding(boolean success) {
+		SwingUtilities.invokeLater(() -> {
+			blockToEncode(false);
+			roiManager.block(!success);
+			samjBtn.setEnabled(!success);
+			samjBtn.setSelected(success);
+			activationBtn.setEnabled(success);
+			if (!success) {
+				activationBtn.setSelected(false);
+				activationLabel.setText(ERROR_ENCODING);
+			} else if (isValidPromptSelected()) {
+				activationBtn.setSelected(true);
+				activationLabel.setText(READY);
+				wasActive = true;
+			} else {
+				activationBtn.setSelected(false);
+				activationLabel.setText(LOST_FOCUS);
+				wasActive = false;
+			}
+		});
 	}
 }
