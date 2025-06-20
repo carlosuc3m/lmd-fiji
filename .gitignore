@@ -1,6 +1,6 @@
 /engines/
 /models/
-
+/appose_**/
 # maven specific files
 /target/
 

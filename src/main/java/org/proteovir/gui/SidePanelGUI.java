@@ -33,6 +33,36 @@ public class SidePanelGUI extends JPanel {
     
     protected RoiManager roiManager;
     
+    protected static final String LOST_FOCUS = ""
+    		+ "<html>"
+    		+ "<span style=\"color: orange;\">&#9888; Select again target image</span>"
+    		+ "</html>";
+    
+    protected static final String ONLY_PROMPTS = ""
+    		+ "<html>"
+    		+ "<font color='orange'>&#9888; Only rect and points!</font>"
+    		+ "</html>";
+    
+    protected static final String OPEN_TARGET = ""
+    		+ "<html>"
+    		+ "<font color='orange'>&#9888; Open image to annotate</font>"
+    		+ "</html>";
+    
+    protected static final String ACTIVATE_TO_SEGMENT = ""
+    		+ "<html>"
+    		+ "<span style=\"color: green;\">Activate to start annotating</span>"
+    		+ "</html>";
+    
+    protected static final String SAMJ = ""
+    		+ "<html>"
+    		+ "<span style=\"color: blue;\">Click on SAMJ to start</span>"
+    		+ "</html>";
+    
+    protected static final String READY = ""
+    		+ "<html>"
+    		+ "<span style=\"color: green;\">Ready to annotate</span>"
+    		+ "</html>";
+    
     
     private static final double ROI_MANAGER_H_RATIO = 0.46d;
     
@@ -61,7 +91,7 @@ public class SidePanelGUI extends JPanel {
 				new Color(190, 255, 190), new Color(220, 220, 220));
 		activationBtn =  new ColoredButton("Activate", new Color(150, 255, 150), Color.LIGHT_GRAY,
 				new Color(190, 255, 190), new Color(220, 220, 220));
-		activationLabel = new JLabel("");
+		activationLabel = new JLabel(OPEN_TARGET);
 		activationLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		activationLabel.setVerticalAlignment(SwingConstants.CENTER);
 		

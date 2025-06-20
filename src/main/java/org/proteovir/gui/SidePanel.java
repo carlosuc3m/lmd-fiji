@@ -1,5 +1,6 @@
 package org.proteovir.gui;
 
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -15,6 +16,9 @@ import ai.nets.samj.ui.SAMJLogger;
 import ij.IJ;
 import ij.ImageListener;
 import ij.ImagePlus;
+import ij.WindowManager;
+import ij.gui.ImageWindow;
+import ij.gui.StackWindow;
 import ij.gui.Toolbar;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.util.Cast;
@@ -25,22 +29,9 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
     
     private ImagePlus imp;
     
+    private boolean alreadyFocused = false;
+    
     SAM2Tiny samj;
-    
-    private static final String LOST_FOCUS = ""
-    		+ "<html>"
-    		+ "<span style=\"color: orange;\">&#9888; Select again target image</span>"
-    		+ "</html>";
-    
-    private static final String ONLY_PROMPTS = ""
-    		+ "<html>"
-    		+ "<font color='orange'>&#9888; Only rect and points!</font>"
-    		+ "</html>";
-    
-    private static final String ACTIVATE_TO_SEGMENT = ""
-    		+ "<html>"
-    		+ "<span style=\"color: green;\">Activate to start annotating</span>"
-    		+ "</html>";
     
     private static final SAMJLogger LOGGER = new SAMJLogger() {
 		@Override
@@ -53,7 +44,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	
 	private Function<File, Boolean> openIm = (file) -> {
 	    try {
-	        ImagePlus imp = IJ.openImage(file.getAbsolutePath());
+	        imp = IJ.openImage(file.getAbsolutePath());
 	        if (imp == null) {
 	            return false;
 	        }
@@ -65,9 +56,6 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	            }
 	            @Override
 	            public void windowLostFocus(WindowEvent e) {
-	                activationBtn.setSelected(false);
-	                activationBtn.setEnabled(false);
-	                activationLabel.setText(LOST_FOCUS);
 	            }
 	        });
 	        return true;
@@ -97,18 +85,24 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	}
 	
 	private void changeOnFocusGained(ImagePlus imp) {
+		if (alreadyFocused)
+			return;
 		this.activationLabel.setText("");
 		this.samjBtn.setEnabled(true);
-		this.samjBtn.setSelected(samj != null && samj.isLoaded());
+		boolean samjLoaded = samj != null && samj.isLoaded();
+		this.samjBtn.setSelected(samjLoaded);
 		this.activationBtn.setSelected(false);
-		if (isValidPromptSelected()) {
+		if (isValidPromptSelected() && samjLoaded) {
 			this.activationBtn.setEnabled(true);
 			this.activationLabel.setText(ACTIVATE_TO_SEGMENT);
-		} else {
+		} else if(samjLoaded) {
 			this.activationBtn.setEnabled(false);
 			this.activationLabel.setText(ONLY_PROMPTS);
+		} else {
+			this.activationBtn.setEnabled(false);
+			this.activationLabel.setText(SAMJ);
 		}
-		
+		alreadyFocused = true;
 		
 	}
 
@@ -124,9 +118,9 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (samj == null || !samj.isLoaded())
-			samj = new SAM2Tiny();
 		new Thread(() -> {
+			if (samj == null || !samj.isLoaded())
+				samj = new SAM2Tiny();
 			try {
 				samj.setImage(Cast.unchecked(ImageJFunctions.wrap(imp)), LOGGER);
 			} catch (IOException | InterruptedException | RuntimeException e1) {
@@ -138,6 +132,22 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 
 	@Override
 	public void imageOpened(ImagePlus imp) {
+		imp.getWindow().addWindowFocusListener(new WindowFocusListener() {
+
+			@Override
+			public void windowGainedFocus(WindowEvent e) {
+            	System.out.println("here");
+            	alreadyFocused = false;
+                activationBtn.setSelected(false);
+                activationBtn.setEnabled(false);
+                activationLabel.setText(LOST_FOCUS);
+			}
+
+			@Override
+			public void windowLostFocus(WindowEvent e) {
+			}
+			
+		});
 	}
 
 	@Override
@@ -150,6 +160,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		this.activationBtn.setEnabled(false);
 		this.samjBtn.setEnabled(false);
 		this.imageGUI.imagePath.setText("");
+		activationLabel.setText(OPEN_TARGET);
 	}
 
 	@Override
