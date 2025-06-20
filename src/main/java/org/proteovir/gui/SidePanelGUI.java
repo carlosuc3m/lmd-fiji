@@ -2,7 +2,6 @@ package org.proteovir.gui;
 
 import java.awt.Color;
 
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -31,9 +30,9 @@ public class SidePanelGUI extends JPanel {
     
     protected ImageGUI imageGUI;
     
-    protected JButton samjBtn;
+    protected ColoredButton samjBtn;
     
-    protected JButton activationBtn;
+    protected ColoredButton activationBtn;
     
     protected JLabel activationLabel;
     
@@ -168,6 +167,8 @@ public class SidePanelGUI extends JPanel {
 	}
 	
 	protected void blockToEncode(boolean block) {
+		this.samjBtn.setLoading(block);
+		
 		this.samjBtn.setEnabled(!block);
 		this.activationBtn.setEnabled(!block);
 		
