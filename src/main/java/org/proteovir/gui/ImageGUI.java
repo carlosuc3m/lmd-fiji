@@ -4,7 +4,7 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.io.File;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -14,7 +14,7 @@ import javax.swing.TransferHandler;
 
 public class ImageGUI extends JPanel {
 	
-	Consumer<File> openImageCallback;
+	Function<File, Boolean> openImageCallback;
     
     JLabel title;
     PlaceholderTextField imagePath;
@@ -55,7 +55,7 @@ public class ImageGUI extends JPanel {
 		        File selected = chooser.getSelectedFile();
 		        imagePath.setText(selected.getAbsolutePath());
 	            if (openImageCallback != null)
-	            	openImageCallback.accept(selected);
+	            	openImageCallback.apply(selected);
 		    }
 		});
 		
@@ -94,10 +94,14 @@ public class ImageGUI extends JPanel {
 		            }
 
 		            File f = files.get(0);
-		            imagePath.setText(f.getAbsolutePath());
-		            if (openImageCallback != null)
-		            	openImageCallback.accept(f);
-		            return true;
+		            if (openImageCallback == null)
+		            	throw new RuntimeException("There is no way to open the selected image");
+		            boolean isImage = openImageCallback.apply(f);
+		            if (isImage)
+		            	imagePath.setText(f.getAbsolutePath());
+		            else 
+		            	imagePath.setTempPlaceholder("Choose a valid image");
+		            return isImage;
 		        } catch (Exception ex) {
 		            ex.printStackTrace();
 		            return false;
@@ -161,7 +165,7 @@ public class ImageGUI extends JPanel {
         metaBtn.setBounds(inset + pathW + inset, y, btnW, metaH - inset);
 	}
 
-	public void setOpenImageCallback(Consumer<File> openIm) {
+	public void setOpenImageCallback(Function<File, Boolean> openIm) {
 		openImageCallback = openIm;
 	}
 

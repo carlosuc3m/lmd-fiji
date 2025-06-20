@@ -10,12 +10,28 @@ import javax.swing.JTextField;
 
 public class PlaceholderTextField extends JTextField {
     private static final long serialVersionUID = 5112778641734509160L;
-	private final String placeholder;
-    private final Color placeholderColor;
+	private String placeholder;
+    private Color placeholderColor;
 
     protected PlaceholderTextField(String placeholder) {
         this.placeholder = placeholder;
         this.placeholderColor = Color.LIGHT_GRAY;
+    }
+    
+    public void setTempPlaceholder(String text) {
+    	String   oldText  = placeholder;
+        Color    oldColor = placeholderColor;
+        try {
+            placeholder      = text;
+            placeholderColor = new Color(255, 191, 191);
+            setText("");
+            // force an immediate paint on the EDT using the *current* width/height
+            paintImmediately(0, 0, getWidth(), getHeight());
+        } finally {
+            // restore state immediately after painting
+            placeholder      = oldText;
+            placeholderColor = oldColor;
+        }
     }
 
     @Override

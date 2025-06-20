@@ -6,8 +6,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.function.Consumer;
-
+import java.util.function.Function;
 
 import org.proteovir.roimanager.ConsumerInterface;
 
@@ -40,29 +39,35 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		@Override
 		public void error(String text) {System.out.println(text);}
 	};
+	
+	private Function<File, Boolean> openIm = (file) -> {
+	    try {
+	        ImagePlus imp = IJ.openImage(file.getAbsolutePath());
+	        if (imp == null) {
+	            return false;
+	        }
+	        imp.show();
+	        imp.getWindow().addWindowFocusListener(new WindowFocusListener() {
+	            @Override
+	            public void windowGainedFocus(WindowEvent e) {
+	                changeOnFocusGained(imp);
+	            }
+	            @Override
+	            public void windowLostFocus(WindowEvent e) {
+	                activationBtn.setSelected(false);
+	                activationBtn.setEnabled(false);
+	                activationLabel.setText(LOST_FOCUS);
+	            }
+	        });
+	        return true;
+	    } catch (Exception ex) {
+	        // you can log ex here if you like
+	        return false;
+	    }
+	};
 
 	public SidePanel(ConsumerInterface consumer) {
 		super(consumer);
-		Consumer<File> openIm = (file) -> {
-            // load the ImagePlus and its canvas
-            imp = IJ.openImage(file.getAbsolutePath());
-            imp.show();
-            imp.getWindow().addWindowFocusListener(new WindowFocusListener() {
-
-				@Override
-				public void windowGainedFocus(WindowEvent e) {
-					changeOnFocusGained(imp);
-				}
-
-				@Override
-				public void windowLostFocus(WindowEvent e) {
-					activationBtn.setSelected(false);
-					activationBtn.setEnabled(false);
-					activationLabel.setText(LOST_FOCUS);
-				}
-            	
-            });
-		};
 		imageGUI.setOpenImageCallback(openIm);
 		samjBtn.addActionListener(this);
 		
@@ -70,7 +75,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		activationBtn.setEnabled(false);
     }
 
-	public void setOpenImageConsumer(Consumer<File> openIm) {
+	public void setOpenImageConsumer(Function<File, Boolean> openIm) {
 		this.imageGUI.setOpenImageCallback(openIm);
 	}
 	
