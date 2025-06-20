@@ -10,6 +10,7 @@ import javax.swing.SwingUtilities;
 
 import org.proteovir.gui.components.ColoredButton;
 import org.proteovir.roimanager.RoiManagerConsumer;
+import org.proteovir.roimanager.RoiManagerIJ;
 import org.proteovir.roimanager.RoiManager;
 
 import ij.gui.Toolbar;
@@ -94,10 +95,12 @@ public class SidePanelGUI extends JPanel {
     private static final double ACTIVATION_LABEL_H_RATIO = 0.025d;
 
 	public SidePanelGUI() {
-		this(null);
+		this(new RoiManagerIJ());
 	}
 
 	public SidePanelGUI(RoiManagerConsumer consumer) {
+		if (consumer == null)
+			consumer = new RoiManagerIJ();
 		
 		statusLabel = new JLabel("Calibration points not set");
 		firstCalibration = new CalibrationPointsGUI(1);

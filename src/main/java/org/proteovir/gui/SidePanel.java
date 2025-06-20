@@ -26,7 +26,6 @@ import ai.nets.samj.ui.SAMJLogger;
 import ij.IJ;
 import ij.ImageListener;
 import ij.ImagePlus;
-import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.gui.Toolbar;
 import io.bioimage.modelrunner.system.PlatformDetection;
@@ -105,6 +104,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	            return false;
 	        }
 	        imp.show();
+	        imp.getCanvas().addMouseListener(SidePanel.this);
 	        imp.getWindow().addWindowFocusListener(new WindowFocusListener() {
 	            @Override
 	            public void windowGainedFocus(WindowEvent e) {
@@ -121,6 +121,10 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	        return false;
 	    }
 	};
+
+	public SidePanel() {
+		this(null);
+	}
 
 	public SidePanel(RoiManagerConsumer consumer) {
 		super(consumer);
@@ -183,6 +187,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 					if (samj == null || !samj.isLoaded())
 						samj = new SAM2Tiny();
 					samj.setImage(Cast.unchecked(ImageJFunctions.wrap(imp)), LOGGER);
+					samj.setReturnOnlyBiggest(true);
 					guiAfterEnconding(true);
 				} catch (IOException | InterruptedException | RuntimeException e1) {
 					e1.printStackTrace();
