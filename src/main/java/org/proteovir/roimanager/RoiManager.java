@@ -23,12 +23,12 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 
     private static final long serialVersionUID = -8405747451234902128L;
     
-    private ConsumerInterface consumer;
+    private RoiManagerConsumer consumer;
     
     private List<Mask> rois = new ArrayList<Mask>();
     
 	
-	public RoiManager(ConsumerInterface consumer) {
+	public RoiManager(RoiManagerConsumer consumer) {
 		this.consumer = consumer;
     }
 

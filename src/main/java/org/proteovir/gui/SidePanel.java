@@ -1,6 +1,5 @@
 package org.proteovir.gui;
 
-import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,11 +12,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Stack;
 import java.util.function.Function;
 
 import javax.swing.SwingUtilities;
 
-import org.proteovir.roimanager.ConsumerInterface;
+import org.proteovir.roimanager.RoiManagerConsumer;
 
 import ai.nets.samj.annotation.Mask;
 import ai.nets.samj.communication.model.SAM2Tiny;
@@ -46,6 +46,48 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
     private boolean alreadyFocused = false;
     
     private SAM2Tiny samj;
+    
+    /**
+	 * Counter of the ROIs created
+	 */
+	private int promptsCreatedCnt = 0;
+	/**
+	 * For the point prompts, whether if hte user is collecting several prompts (pressing the ctrl key)
+	 * or just one
+	 */
+	private boolean isCollectingPoints = false;
+	/**
+	 * All the points being collected that reference the instance of interest
+	 */
+	private List<Localizable> collectedPoints = new ArrayList<Localizable>();
+	/**
+	 * All the points being collected that reference the background (ctrl + alt)
+	 */
+	private List<Localizable> collecteNegPoints = new ArrayList<Localizable>();
+	/**
+	 * Save lists of rois that have been added at the same time to delete them if necessary
+	 */
+   private Stack<List<Mask>> undoStack = new Stack<>();
+   /**
+    * Save lists of polygons deleted at the same time to undo their deleting
+    */
+   private Stack<List<Mask>> redoStack = new Stack<>();
+   /**
+    * List of the annotated masks on an image
+    */
+   private Stack<List<Mask>> annotatedMask = new Stack<List<Mask>>();
+   /**
+    * List that keeps track of the annotated masks
+    */
+   private Stack<List<Mask>> redoAnnotatedMask = new Stack<List<Mask>>();
+   /**
+    * Tracks if Ctrl+Z has already been handled
+    */
+   private boolean undoPressed = false;
+   /**
+    * Tracks if Ctrl+Y has already been handled
+    */
+   private boolean redoPressed = false;
     
     private static final SAMJLogger LOGGER = new SAMJLogger() {
 		@Override
@@ -80,7 +122,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	    }
 	};
 
-	public SidePanel(ConsumerInterface consumer) {
+	public SidePanel(RoiManagerConsumer consumer) {
 		super(consumer);
 		samjBtn.setEnabled(false);
 		activationBtn.setEnabled(false);
@@ -232,11 +274,24 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		}
 		collectedPoints = new ArrayList<Localizable>();
 		collecteNegPoints = new ArrayList<Localizable>();
-		temporalROIs = new ArrayList<Roi>();
-		temporalNegROIs = new ArrayList<Roi>();
 	}
 	
 	void addToRoiManager(final List<Mask> polys, final String promptShape) {
+		if (this.roiManager.getROIsNumber() == 0 && undoStack.size() != 0)
+			annotatedMask.clear();
+			
+		this.redoStack.clear();
+		this.redoAnnotatedMask.clear();
+		promptsCreatedCnt++;
+		int resNo = 1;
+		List<Mask> undoRois = new ArrayList<Mask>();
+		for (Mask m : polys) {
+			m.setName(promptsCreatedCnt + "." + (resNo ++) + "_"+promptShape + "_" + this.samj.getName());
+			this.roiManager.addRoi(m);
+			undoRois.add(m);
+		}
+		this.undoStack.push(undoRois);
+		this.annotatedMask.push(polys);
 	}
 
 	@Override

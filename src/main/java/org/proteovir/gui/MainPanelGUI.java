@@ -8,7 +8,7 @@ import java.awt.event.ComponentEvent;
 
 import javax.swing.JPanel;
 
-import org.proteovir.roimanager.ConsumerInterface;
+import org.proteovir.roimanager.RoiManagerConsumer;
 
 
 /**
@@ -28,7 +28,7 @@ public class MainPanelGUI extends JPanel {
     
     private static final int MINIMUM_WIDTH = 40;
 
-    public MainPanelGUI(ConsumerInterface consumer) {
+    public MainPanelGUI(RoiManagerConsumer consumer) {
 
         // Use BorderLayout to place canvas on the left and buttons on the right
         setLayout(null);

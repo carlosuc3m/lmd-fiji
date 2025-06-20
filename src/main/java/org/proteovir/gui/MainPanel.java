@@ -3,7 +3,7 @@ package org.proteovir.gui;
 import java.io.File;
 import java.util.function.Function;
 
-import org.proteovir.roimanager.ConsumerInterface;
+import org.proteovir.roimanager.RoiManagerConsumer;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -21,7 +21,7 @@ public class MainPanel extends MainPanelGUI {
     private ImagePlus imp;
     private ImageCanvas currentCanvas;
 
-	public MainPanel(ConsumerInterface consumer) {
+	public MainPanel(RoiManagerConsumer consumer) {
 		super(consumer);
 		Function<File, Boolean> openIm = (file) -> {
 		    try {

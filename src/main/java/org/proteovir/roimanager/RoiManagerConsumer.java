@@ -4,7 +4,7 @@ import java.util.List;
 
 import ai.nets.samj.annotation.Mask;
 
-public interface ConsumerInterface {
+public interface RoiManagerConsumer {
 
 	public void setRois(List<Mask> rois);
 	
