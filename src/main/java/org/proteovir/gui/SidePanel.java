@@ -215,7 +215,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		} else {
 			return;
 		}
-		if (!isCollectingPoints) imp.deleteRoi();
+		//if (!isCollectingPoints) imp.deleteRoi();
 	}
 	
 	private void annotateRect() {

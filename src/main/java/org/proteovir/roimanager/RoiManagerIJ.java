@@ -1,7 +1,6 @@
 package org.proteovir.roimanager;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.List;
 
 import ai.nets.samj.annotation.Mask;
@@ -16,14 +15,21 @@ import ij.plugin.OverlayLabels;
 
 public class RoiManagerIJ implements RoiManagerConsumer {
 
+	PolygonRoi roi = null;
 	public void setRois(List<Mask> rois) {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		Overlay overlay = newOverlay();
 		for (Mask mm : rois) {
-			PolygonRoi roi = new PolygonRoi(mm.getContour(), PolygonRoi.POLYGON);
+			roi = new PolygonRoi(mm.getContour(), PolygonRoi.POLYGON);
 			overlay.add(roi);
 		}
+		roi.setImage(null);
+		imp.setRoi(roi);
+		imp.getWindow().getCanvas().getImage().setRoi(roi);
 		setOverlay(imp, overlay);
+		imp.getWindow().getCanvas().getImage().setRoi(roi);
+		imp.getWindow().getCanvas().repaint();;
+		//imp.getCanvas().repaint();
 	}
 
 	private Overlay newOverlay() {
@@ -45,6 +51,8 @@ public class RoiManagerIJ implements RoiManagerConsumer {
 			if (imp.getOverlay()==null)
 				imp.setOverlay(overlay);
 			return;
+		} else {
+			imp.setOverlay(overlay);
 		}
 		ic.setShowAllList(overlay);
 		imp.draw();

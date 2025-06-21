@@ -83,6 +83,7 @@ public class ColoredButton extends JPanel {
                         fireActionPerformed(new ActionEvent(ColoredButton.this, ActionEvent.ACTION_PERFORMED, ""));
                     }
                     repaint();
+                    setSelected(!isSelected());
                 }
             }
         });
