@@ -1,8 +1,12 @@
 package org.proteovir.roimanager;
 
 import java.awt.Color;
+import java.awt.Polygon;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import ai.nets.samj.annotation.Mask;
 import ij.ImagePlus;
@@ -17,7 +21,9 @@ import ij.plugin.OverlayLabels;
 
 public class RoiManagerIJ implements RoiManagerConsumer, RoiListener {
 	
-	private HashMap<Integer, String> map;
+	private List<Roi> roiList;
+	
+	private BiConsumer<Integer,Polygon> modifyRoiCallback;
 	
 	public RoiManagerIJ() {
 		Roi.addRoiListener(this);
@@ -26,11 +32,11 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener {
 	public void setRois(List<Mask> rois) {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		Overlay overlay = newOverlay();
-		map = new HashMap<Integer, String>();
+		roiList = new ArrayList<Roi>();
 		for (Mask mm : rois) {
 			PolygonRoi roi = new PolygonRoi(mm.getContour(), PolygonRoi.POLYGON);
 			overlay.add(roi);
-			map.put(roi.hashCode(), mm.getUUID());
+			roiList.add(roi);
 		}
 		imp.deleteRoi();
 		setOverlay(imp, overlay);
@@ -40,9 +46,11 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		Overlay overlay = newOverlay();
 		int i = 0;
+		roiList = new ArrayList<Roi>();
 		for (Mask mm : rois) {
 			PolygonRoi roi = new PolygonRoi(mm.getContour(), PolygonRoi.POLYGON);
 			overlay.add(roi);
+			roiList.add(roi);
 			if (i == ind)
 				imp.setRoi(roi);
 			i ++;
@@ -89,7 +97,22 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener {
 
 	@Override
 	public void roiModified(ImagePlus imp, int id) {
-		System.out.println(id);
+		if (id == 5)
+			return;
+		Roi roi = imp.getRoi();
+		int i = 0; 
+		for (Roi roi2 : this.roiList) {
+			if (roi.equals(roi2)) {
+				modifyRoiCallback.accept(i, roi.getPolygon());
+				break;
+			}
+			i ++;
+		}
+	}
+
+	@Override
+	public void setModifyRoiCallback(BiConsumer<Integer,Polygon> modifyRoiCallback) {
+		this.modifyRoiCallback = modifyRoiCallback;
 		
 	}
 }

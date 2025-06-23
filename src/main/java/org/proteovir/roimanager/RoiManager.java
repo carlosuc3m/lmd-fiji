@@ -2,6 +2,7 @@ package org.proteovir.roimanager;
 
 
 import java.awt.Point;
+import java.awt.Polygon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -10,15 +11,15 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import javax.swing.JButton;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.proteovir.roimanager.utils.DouglasPeucker;
 
 import ai.nets.samj.annotation.Mask;
 
@@ -31,9 +32,19 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
     
     private List<Mask> rois = new ArrayList<Mask>();
     
+    private boolean justClickedDelete = false;
+    
 	
 	public RoiManager(RoiManagerConsumer consumer) {
 		this.consumer = consumer;
+		BiConsumer<Integer,Polygon> mod = (ii, pol) -> {
+		    int n = rois.size();
+		    if (ii < 0 || ii >= n)
+		        return;
+		    rois.get(ii).clear();
+		    rois.get(ii).setContour(pol);
+		};
+		consumer.setModifyRoiCallback(null);
     }
 
 	protected void addButton(String label) {
@@ -91,7 +102,6 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 		rois.remove(index);
 		listModel.remove(index);
 		updateShowAll();
-		repaint();
 	}
 
 	private void updateShowAll() {
@@ -130,10 +140,6 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 		
 	}
 	
-	private void deleteSelected() {
-		
-	}
-	
 	private void exportMask() {
 		
 	}
@@ -152,10 +158,17 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 			addRoiFromGUI();
 		else if (command.equals("Simplify"))
 			simplify();
-		else if (command.equals("Delete"))
-			deleteSelected();
-		else if (command.equals("Complicate"))
+		else if (command.equals("Delete") && list.getSelectedIndex() != -1)
+			delete(list.getSelectedIndex());
+		else if (command.equals("Delete") && list.getSelectedIndex() == -1 && justClickedDelete)
+			deleteAll();
+		else if (command.equals("Delete") && list.getSelectedIndex() == -1) {
+			justClickedDelete = true;
+			return;
+		} else if (command.equals("Complicate"))
 			complicate();
+		
+		justClickedDelete = false;
 	}
 
 	@Override
