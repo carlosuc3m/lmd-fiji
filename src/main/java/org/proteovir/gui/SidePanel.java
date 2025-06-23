@@ -28,11 +28,13 @@ import ij.ImageListener;
 import ij.ImagePlus;
 import ij.gui.Roi;
 import ij.gui.Toolbar;
+import ij.plugin.CompositeConverter;
 import io.bioimage.modelrunner.system.PlatformDetection;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.Point;
+import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.util.Cast;
 
@@ -186,7 +188,9 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 				try {
 					if (samj == null || !samj.isLoaded())
 						samj = new SAM2Tiny();
-					samj.setImage(Cast.unchecked(ImageJFunctions.wrap(imp)), LOGGER);
+					boolean isColorRGB = imp.getType() == ImagePlus.COLOR_RGB;
+					Img<?> image = ImageJFunctions.wrap(isColorRGB ? CompositeConverter.makeComposite(imp) : imp);
+					samj.setImage(Cast.unchecked(image), LOGGER);
 					samj.setReturnOnlyBiggest(true);
 					guiAfterEnconding(true);
 				} catch (IOException | InterruptedException | RuntimeException e1) {

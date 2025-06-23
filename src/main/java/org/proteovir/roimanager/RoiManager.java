@@ -1,6 +1,7 @@
 package org.proteovir.roimanager;
 
 
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -9,12 +10,15 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import org.proteovir.roimanager.utils.DouglasPeucker;
 
 import ai.nets.samj.annotation.Mask;
 
@@ -102,7 +106,13 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 	}
 	
 	private void simplify() {
-		
+		Mask mask = rois.get(list.getSelectedIndex());
+		List<Point2D> points = new ArrayList<Point2D>();
+		for (int i = 0; i < mask.getContour().npoints; i ++) {
+			points.add(new Point2D.Double(mask.getContour().xpoints[i], mask.getContour().ypoints[i]));
+		}
+		List<Point2D> simple = DouglasPeucker.simplify(points, 0.5);
+		consumer.setSelected(simple);
 	}
 	
 	private void complicate() {
@@ -151,7 +161,10 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		// TODO Auto-generated method stub
+		if (e.getComponent().equals(this.list)) {
+			int ind = this.list.getSelectedIndex();
+			consumer.setSelected(this.rois.get(ind));
+		}
 		
 	}
 

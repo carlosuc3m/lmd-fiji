@@ -1,6 +1,7 @@
 package org.proteovir.roimanager;
 
 import java.awt.Color;
+import java.awt.geom.Point2D;
 import java.util.List;
 
 import ai.nets.samj.annotation.Mask;
@@ -15,21 +16,35 @@ import ij.plugin.OverlayLabels;
 
 public class RoiManagerIJ implements RoiManagerConsumer {
 
-	PolygonRoi roi = null;
 	public void setRois(List<Mask> rois) {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		Overlay overlay = newOverlay();
 		for (Mask mm : rois) {
-			roi = new PolygonRoi(mm.getContour(), PolygonRoi.POLYGON);
+			PolygonRoi roi = new PolygonRoi(mm.getContour(), PolygonRoi.POLYGON);
 			overlay.add(roi);
 		}
-		roi.setImage(null);
-		imp.setRoi(roi);
-		imp.getWindow().getCanvas().getImage().setRoi(roi);
+		imp.deleteRoi();
 		setOverlay(imp, overlay);
-		imp.getWindow().getCanvas().getImage().setRoi(roi);
-		imp.getWindow().getCanvas().repaint();;
-		//imp.getCanvas().repaint();
+	}
+
+	@Override
+	public void setSelected(Mask mm) {
+		PolygonRoi roi = new PolygonRoi(mm.getContour(), PolygonRoi.POLYGON);
+		ImagePlus imp = WindowManager.getCurrentImage();
+		imp.setRoi(roi, true);
+	}
+
+	@Override
+	public void setSelected(List<Point2D> simple) {
+		int[] xpoints = new int[simple.size()];
+		int[] ypoints = new int[simple.size()];
+		for (int i = 0; i < simple.size(); i ++) {
+			xpoints[i] = (int) simple.get(i).getX();
+			ypoints[i] = (int) simple.get(i).getY();
+		}
+		PolygonRoi roi = new PolygonRoi(xpoints, ypoints, simple.size(), PolygonRoi.POLYGON);
+		ImagePlus imp = WindowManager.getCurrentImage();
+		imp.setRoi(roi, true);
 	}
 
 	private Overlay newOverlay() {
