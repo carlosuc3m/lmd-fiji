@@ -1,7 +1,6 @@
 package org.proteovir.roimanager;
 
 import java.awt.Color;
-import java.awt.geom.Point2D;
 import java.util.List;
 
 import ai.nets.samj.annotation.Mask;
@@ -11,7 +10,6 @@ import ij.WindowManager;
 import ij.gui.ImageCanvas;
 import ij.gui.Overlay;
 import ij.gui.PolygonRoi;
-import ij.gui.Roi;
 import ij.plugin.OverlayLabels;
 
 public class RoiManagerIJ implements RoiManagerConsumer {
@@ -29,21 +27,8 @@ public class RoiManagerIJ implements RoiManagerConsumer {
 
 	@Override
 	public void setSelected(Mask mm) {
+		ImagePlus imp = WindowManager.getCurrentImage();
 		PolygonRoi roi = new PolygonRoi(mm.getContour(), PolygonRoi.POLYGON);
-		ImagePlus imp = WindowManager.getCurrentImage();
-		imp.setRoi(roi, true);
-	}
-
-	@Override
-	public void setSelected(List<Point2D> simple) {
-		int[] xpoints = new int[simple.size()];
-		int[] ypoints = new int[simple.size()];
-		for (int i = 0; i < simple.size(); i ++) {
-			xpoints[i] = (int) simple.get(i).getX();
-			ypoints[i] = (int) simple.get(i).getY();
-		}
-		PolygonRoi roi = new PolygonRoi(xpoints, ypoints, simple.size(), PolygonRoi.POLYGON);
-		ImagePlus imp = WindowManager.getCurrentImage();
 		imp.setRoi(roi, true);
 	}
 

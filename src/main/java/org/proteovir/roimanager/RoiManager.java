@@ -107,16 +107,14 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 	
 	private void simplify() {
 		Mask mask = rois.get(list.getSelectedIndex());
-		List<Point2D> points = new ArrayList<Point2D>();
-		for (int i = 0; i < mask.getContour().npoints; i ++) {
-			points.add(new Point2D.Double(mask.getContour().xpoints[i], mask.getContour().ypoints[i]));
-		}
-		List<Point2D> simple = DouglasPeucker.simplify(points, 0.5);
-		consumer.setSelected(simple);
+		mask.simplify();
+		consumer.setSelected(mask);
 	}
 	
 	private void complicate() {
-		
+		Mask mask = rois.get(list.getSelectedIndex());
+		mask.complicate();
+		consumer.setSelected(mask);
 	}
 	
 	private void merge() {
