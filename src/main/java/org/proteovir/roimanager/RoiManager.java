@@ -109,12 +109,13 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 		Mask mask = rois.get(list.getSelectedIndex());
 		mask.simplify();
 		consumer.setSelected(mask);
+		consumer.setRois(rois, list.getSelectedIndex());
 	}
 	
 	private void complicate() {
 		Mask mask = rois.get(list.getSelectedIndex());
 		mask.complicate();
-		consumer.setSelected(mask);
+		consumer.setRois(rois, list.getSelectedIndex());
 	}
 	
 	private void merge() {

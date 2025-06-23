@@ -25,6 +25,20 @@ public class RoiManagerIJ implements RoiManagerConsumer {
 		setOverlay(imp, overlay);
 	}
 
+	public void setRois(List<Mask> rois, int ind) {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		Overlay overlay = newOverlay();
+		int i = 0;
+		for (Mask mm : rois) {
+			PolygonRoi roi = new PolygonRoi(mm.getContour(), PolygonRoi.POLYGON);
+			overlay.add(roi);
+			if (i == ind)
+				imp.setRoi(roi);
+			i ++;
+		}
+		setOverlay(imp, overlay);
+	}
+
 	@Override
 	public void setSelected(Mask mm) {
 		ImagePlus imp = WindowManager.getCurrentImage();
