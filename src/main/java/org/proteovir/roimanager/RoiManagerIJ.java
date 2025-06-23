@@ -1,6 +1,7 @@
 package org.proteovir.roimanager;
 
 import java.awt.Color;
+import java.util.HashMap;
 import java.util.List;
 
 import ai.nets.samj.annotation.Mask;
@@ -10,16 +11,26 @@ import ij.WindowManager;
 import ij.gui.ImageCanvas;
 import ij.gui.Overlay;
 import ij.gui.PolygonRoi;
+import ij.gui.Roi;
+import ij.gui.RoiListener;
 import ij.plugin.OverlayLabels;
 
-public class RoiManagerIJ implements RoiManagerConsumer {
+public class RoiManagerIJ implements RoiManagerConsumer, RoiListener {
+	
+	private HashMap<Integer, String> map;
+	
+	public RoiManagerIJ() {
+		Roi.addRoiListener(this);
+	}
 
 	public void setRois(List<Mask> rois) {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		Overlay overlay = newOverlay();
+		map = new HashMap<Integer, String>();
 		for (Mask mm : rois) {
 			PolygonRoi roi = new PolygonRoi(mm.getContour(), PolygonRoi.POLYGON);
 			overlay.add(roi);
+			map.put(roi.hashCode(), mm.getUUID());
 		}
 		imp.deleteRoi();
 		setOverlay(imp, overlay);
@@ -73,6 +84,12 @@ public class RoiManagerIJ implements RoiManagerConsumer {
 	}
 	
 	public void deleteAllRois() {
+		
+	}
+
+	@Override
+	public void roiModified(ImagePlus imp, int id) {
+		System.out.println(id);
 		
 	}
 }
