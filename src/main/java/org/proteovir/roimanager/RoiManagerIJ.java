@@ -97,7 +97,7 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener {
 
 	@Override
 	public void roiModified(ImagePlus imp, int id) {
-		if (id == 5)
+		if (id != RoiListener.MODIFIED && id != RoiListener.MOVED)
 			return;
 		Roi roi = imp.getRoi();
 		int i = 0; 
