@@ -135,7 +135,7 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener{
 		
 		metaBtn.addActionListener(e -> {
 			if (new File(imagePath.getText()).isFile()) {
-		        openImage(new File(imagePath.getText()));
+				openMeta(new File(metadataPath.getText()));
 		        return;
 			}
 		    JFileChooser chooser = new JFileChooser("");
@@ -145,6 +145,7 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener{
 		    if (result == JFileChooser.APPROVE_OPTION) {
 		        File selected = chooser.getSelectedFile();
 		        metadataPath.setText(selected.getAbsolutePath());
+		        openMeta(selected);
 		    }
 		});
 		
@@ -207,6 +208,7 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener{
 
 		            File f = files.get(0);
 		            metadataPath.setText(f.getAbsolutePath());
+			        openMeta(f);
 		            return true;
 		        } catch (Exception ex) {
 		            ex.printStackTrace();
@@ -279,7 +281,10 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener{
 		} else {
 			setDefault();
 		}
-
+	}
+	
+	private void openMeta(File file) {
+		
 	}
 	
 	private void openImage(File file) {
