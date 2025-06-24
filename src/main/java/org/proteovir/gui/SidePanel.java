@@ -231,14 +231,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	public void mouseReleased(MouseEvent e) {
 		if (e.getSource() == this.roiManager.getList())
 			return;
-		if ((!wasActive || !alreadyFocused) && imp.getRoi() == null) {
-			//this.roiManager.updateShowAll();
-			return;
-		}
-		if ((!wasActive || !alreadyFocused) && imp.getRoi() != null) {
-			//Roi roi = imp.getRoi();
-			//this.roiManager.updateShowAll();
-			//imp.setRoi(roi);
+		if (!wasActive || !alreadyFocused || imp.getRoi() == null) {
 			return;
 		}
 		if (Toolbar.getToolName().equals("rectangle")) {
@@ -443,10 +436,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	
 	@Override
 	public void mousePressed(MouseEvent e) {
-		//if (e.getSource().equals(imp.getCanvas()))
-			//roiManager.updateShowAll();
 	}
-	
 	@Override
 	public void imageUpdated(ImagePlus imp) {
 	}
