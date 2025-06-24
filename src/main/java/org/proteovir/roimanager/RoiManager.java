@@ -1,7 +1,6 @@
 package org.proteovir.roimanager;
 
 
-import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,7 +13,6 @@ import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 import javax.swing.JButton;
 import javax.swing.event.ListSelectionEvent;
@@ -44,7 +42,7 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 		    rois.get(ii).clear();
 		    rois.get(ii).setContour(pol);
 		};
-		consumer.setModifyRoiCallback(null);
+		consumer.setModifyRoiCallback(mod);
     }
 
 	protected void addButton(String label) {
