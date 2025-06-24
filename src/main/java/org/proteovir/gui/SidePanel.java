@@ -133,12 +133,6 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	
 	Consumer<Boolean> activationCallback = (bool) -> {
 		wasActive = bool;
-		/*
-		// TODO what to do with this 
-		if (imp != null && bool)
-		else if (imp != null && !bool)
-			imp.getCanvas().addKeyListener(IJ.getInstance());
-		*/
 	};
 
 	public SidePanel() {

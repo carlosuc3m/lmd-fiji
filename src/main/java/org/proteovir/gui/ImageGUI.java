@@ -49,7 +49,16 @@ public class ImageGUI extends JPanel {
 		add(metaBtn);
 		
 		imageBtn.addActionListener(e -> {
-		    JFileChooser chooser = new JFileChooser();
+			if (new File(imagePath.getText()).isFile()) {
+	            if (openImageCallback != null)
+	            	openImageCallback.apply(new File(imagePath.getText()));
+		        return;
+			}
+		    JFileChooser chooser;
+		    if (new File(imagePath.getText()).isDirectory())
+		    	chooser = new JFileChooser(imagePath.getText());
+	    	else
+		    	chooser = new JFileChooser();
 		    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
 		    int result = chooser.showOpenDialog(imageBtn.getParent());

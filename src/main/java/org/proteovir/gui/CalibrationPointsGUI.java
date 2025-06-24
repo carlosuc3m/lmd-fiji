@@ -1,9 +1,14 @@
 package org.proteovir.gui;
 
 import java.awt.Color;
+import java.awt.Frame;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -15,11 +20,22 @@ import javax.swing.TransferHandler;
 
 import org.proteovir.gui.components.PlaceholderTextField;
 
-public class CalibrationPointsGUI extends JPanel {
+import ij.IJ;
+import ij.ImageListener;
+import ij.ImagePlus;
+import ij.gui.Roi;
+import ij.gui.Toolbar;
+import io.bioimage.modelrunner.gui.YesNoDialog;
+
+public class CalibrationPointsGUI extends JPanel implements MouseListener{
 
     private static final long serialVersionUID = -8405747451234902128L;
     
     private final int n;
+    
+    private int[] calibrationPoint;
+    
+    private ImagePlus imp;
     
     JLabel title;
     PlaceholderTextField imagePath;
@@ -54,19 +70,51 @@ public class CalibrationPointsGUI extends JPanel {
 		add(metadataPath);
 		add(metaBtn);
 		
+		ImagePlus.addImageListener(new ImageListener() {
+
+			@Override
+			public void imageClosed(ImagePlus imp) {
+				if (CalibrationPointsGUI.this.imp != null && imp.equals(CalibrationPointsGUI.this.imp)) {
+					unblockAll();
+					CalibrationPointsGUI.this.imp = null;
+					if (calibrationPoint == null)
+						imagePath.setText("");
+				}
+			}
+
+			@Override
+			public void imageUpdated(ImagePlus imp) {}
+			@Override
+			public void imageOpened(ImagePlus imp) {}
+        	
+        });
+		
 		imageBtn.addActionListener(e -> {
-		    JFileChooser chooser = new JFileChooser();
+			if (new File(imagePath.getText()).isFile()) {
+		        openImage(new File(imagePath.getText()));
+		        return;
+			}
+		    JFileChooser chooser;
+		    if (new File(imagePath.getText()).isDirectory())
+		    	chooser = new JFileChooser(imagePath.getText());
+	    	else
+		    	chooser = new JFileChooser();
 		    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
 		    int result = chooser.showOpenDialog(imageBtn.getParent());
 		    if (result == JFileChooser.APPROVE_OPTION) {
 		        File selected = chooser.getSelectedFile();
 		        imagePath.setText(selected.getAbsolutePath());
+		        openImage(selected);
 		    }
 		});
 		
 		metaBtn.addActionListener(e -> {
-		    JFileChooser chooser = new JFileChooser();
+			if (new File(imagePath.getText()).isFile()) {
+		        openImage(new File(imagePath.getText()));
+		        return;
+			}
+		    JFileChooser chooser = new JFileChooser("");
 		    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
 		    int result = chooser.showOpenDialog(metaBtn.getParent());
@@ -101,6 +149,7 @@ public class CalibrationPointsGUI extends JPanel {
 
 		            File f = files.get(0);
 		            imagePath.setText(f.getAbsolutePath());
+			        openImage(f);
 		            return true;
 		        } catch (Exception ex) {
 		            ex.printStackTrace();
@@ -179,5 +228,70 @@ public class CalibrationPointsGUI extends JPanel {
 		this.imagePath.setEnabled(!block);
 		this.metadataPath.setEditable(!block);
 		this.metadataPath.setEnabled(!block);
+	}
+	
+	private void openImage(File file) {
+		try {
+	        imp = IJ.openImage(file.getAbsolutePath());
+	        if (imp == null) {
+	            return;
+	        }
+	        imp.show();
+	        boolean agreed = YesNoDialog.askQuestion("Select calibration point", 
+	        		String.format("Click on the place of calibration point %s", n));
+	        if (!agreed) {
+	        	imp.getWindow().dispose();
+	        	imp.close();
+	        	this.imagePath.setText("");
+	        } else {
+		        blockOthers(imp.getWindow());
+		        IJ.setTool(Toolbar.POINT);
+		        imp.getCanvas().addMouseListener(this);
+	        }
+	    } catch (Exception ex) {
+	        // you can log ex here if you like
+	    }
+	}
+	
+	public static void blockOthers(Frame blocker) {
+        for (Window w : Window.getWindows()) {
+            if (w instanceof Frame && w != blocker) {
+                w.setEnabled(false);
+            }
+        }
+    }
+    public static void unblockAll() {
+        for (Window w : Window.getWindows()) {
+            w.setEnabled(true);
+        }
+    }
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		calibrationPoint = null;
+		Roi roi = imp.getRoi();
+    	if (roi != null) {
+	    	Iterator<java.awt.Point> iterator = roi.iterator();
+			java.awt.Point p = iterator.next();
+			calibrationPoint = new int[] {(int) p.getX(), (int) p.getY()};
+    	}
+    	imp.getWindow().dispose();
+    	imp.close();
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
 	}
 }

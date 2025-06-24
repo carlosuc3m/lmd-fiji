@@ -50,4 +50,17 @@ public class PlaceholderTextField extends JTextField {
             g2.dispose();
         }
     }
+
+    /**
+     * Override paste so that if we're currently "empty" (showing placeholder),
+     * we first clear, then let the normal JTextField.paste() insert the clipboard text.
+     */
+    @Override
+    public void paste() {
+        // if empty (i.e. placeholder showing), clear so paste goes into the real content
+        if (getText().isEmpty()) {
+            setText("");
+        }
+        super.paste();
+    }
 }
