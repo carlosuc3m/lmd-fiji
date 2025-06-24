@@ -5,6 +5,11 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 
 import javax.swing.JTextField;
 
@@ -58,9 +63,21 @@ public class PlaceholderTextField extends JTextField {
     @Override
     public void paste() {
         // if empty (i.e. placeholder showing), clear so paste goes into the real content
-        if (getText().isEmpty()) {
-            setText("");
+        String pasteString = getClipboardString();
+        if (pasteString == null)
+        	return;
+        setText(pasteString);
+    }
+    
+    public static String getClipboardString() {
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        try {
+            if (clipboard.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
+                return (String) clipboard.getData(DataFlavor.stringFlavor);
+            }
+        } catch (UnsupportedFlavorException | IOException ex) {
+            ex.printStackTrace();
         }
-        super.paste();
+        return null;
     }
 }
