@@ -76,19 +76,8 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 	}
 
 	public void deleteAll() {
-		int n = getROIsNumber();
-		if (n == 0)
-			return;
-		int index[] = list.getSelectedIndices();
-		if (index.length==0 || n == index.length) {
-			rois.clear();
-			listModel.removeAllElements();
-		} else {
-			for (int i = index.length - 1; i >= 0; i ++) {
-				rois.remove(i);
-				listModel.remove(i);
-			}
-		}
+		rois.clear();
+		listModel.removeAllElements();
 		updateShowAll();
 	}
 
@@ -116,7 +105,7 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 	}
 
 	private void updateShowAll() {
-		if (showAllCheckbox.isSelected() && getROIsNumber()>0)
+		if (showAllCheckbox.isSelected())
 			consumer.setRois(rois);
 		else
 			consumer.deleteAllRois();

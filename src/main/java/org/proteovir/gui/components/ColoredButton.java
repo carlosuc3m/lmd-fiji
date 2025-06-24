@@ -12,6 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.function.Consumer;
 
 /**
  * A custom button component built on a JPanel for absolute rendering control.
@@ -21,6 +22,8 @@ import java.net.URL;
  */
 public class ColoredButton extends JPanel {
     private static final long serialVersionUID = 1L;
+    
+    Consumer<Boolean> selectionCallback;
 
     // --- State Flags ---
     private boolean selected = false;
@@ -95,6 +98,10 @@ public class ColoredButton extends JPanel {
         setFont(new Font("Default", Font.BOLD, 12));
     }
     
+    public void setSelectionCallback(Consumer<Boolean> callback) {
+    	this.selectionCallback = callback;
+    }
+    
     // --- Public methods to control state, mimicking JButton ---
 
     public void setText(String text) {
@@ -120,6 +127,8 @@ public class ColoredButton extends JPanel {
     public void setSelected(boolean isSelected) {
         if (this.selected == isSelected) return;
         this.selected = isSelected;
+        if (selectionCallback != null)
+        	selectionCallback.accept(selected);
         repaint();
     }
     

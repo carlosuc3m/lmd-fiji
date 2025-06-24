@@ -3,6 +3,8 @@ package org.proteovir.gui;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
@@ -13,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.swing.SwingUtilities;
@@ -38,7 +41,7 @@ import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.util.Cast;
 
-public class SidePanel extends SidePanelGUI implements ActionListener, ImageListener, MouseListener {
+public class SidePanel extends SidePanelGUI implements ActionListener, ImageListener, MouseListener, KeyListener {
 
     private static final long serialVersionUID = -8405747451234902128L;
     
@@ -107,6 +110,8 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	        }
 	        imp.show();
 	        imp.getCanvas().addMouseListener(SidePanel.this);
+	        imp.getCanvas().addKeyListener(SidePanel.this);
+			imp.getCanvas().removeKeyListener(IJ.getInstance());
 	        imp.getWindow().addWindowFocusListener(new WindowFocusListener() {
 	            @Override
 	            public void windowGainedFocus(WindowEvent e) {
@@ -123,6 +128,16 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	        return false;
 	    }
 	};
+	
+	Consumer<Boolean> activationCallback = (bool) -> {
+		wasActive = bool;
+		/*
+		// TODO what to do with this 
+		if (imp != null && bool)
+		else if (imp != null && !bool)
+			imp.getCanvas().addKeyListener(IJ.getInstance());
+		*/
+	};
 
 	public SidePanel() {
 		this(null);
@@ -133,6 +148,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		samjBtn.setEnabled(false);
 		activationBtn.setEnabled(false);
 		
+		activationBtn.setSelectionCallback(activationCallback);
 		imageGUI.setOpenImageCallback(openIm);
 
 		roiManager.getList().addMouseListener(this);
@@ -201,10 +217,8 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 				
 			}).start();
 		} else if (e.getSource() == activationBtn && activationBtn.isSelected()) {
-			wasActive = false;
 			activationLabel.setText(ACTIVATE_TO_SEGMENT);
 		} else if (e.getSource() == activationBtn) {
-			wasActive = true;
 			activationLabel.setText(READY);
 		}
 	}
@@ -347,10 +361,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		this.imp = null;
 		alreadyFocused = false;
 	}
-
-	@Override
-	public void imageUpdated(ImagePlus imp) {
-	}
+	
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		if (e.getSource() != this.roiManager.getList())
@@ -361,6 +372,50 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		this.activationLabel.setText(ACTIVATE_TO_SEGMENT);
 		wasActive = false;
 	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+        if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Z && this.undoStack.size() != 0 && !redoPressed) {
+        	redoPressed = true;
+        	try {
+	        	List<Mask> redoList = undoStack.peek();
+	        	int n = this.roiManager.getROIsNumber() - 1;
+	        	for (Mask pol : redoList) roiManager.delete(n --);
+	        	undoStack.pop();
+	        	redoStack.push(redoList);
+	        	this.redoAnnotatedMask.push(this.annotatedMask.peek());
+	        	this.annotatedMask.pop();
+        	} catch (Exception ex) {
+        	}
+        } else if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Y && this.redoStack.size() != 0 && !undoPressed) {
+        	undoPressed = true;
+        	List<Mask> redoList = redoStack.peek();
+        	for (Mask pol : redoList) roiManager.addRoi(pol);
+        	redoStack.pop();
+        	undoStack.push(redoList);
+        	this.annotatedMask.push(this.redoAnnotatedMask.peek());
+        	this.redoAnnotatedMask.pop();
+        }
+        e.consume();
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		if ((e.getKeyCode() == KeyEvent.VK_CONTROL && !PlatformDetection.isMacOS()) 
+				|| (e.getKeyCode() == KeyEvent.VK_META && PlatformDetection.isMacOS())) {
+			submitAndClearPoints();
+		}
+	    if (e.getKeyCode() == KeyEvent.VK_Z) {
+	        redoPressed = false;
+	    }
+	    if (e.getKeyCode() == KeyEvent.VK_Y) {
+	        undoPressed = false;
+	    }
+	}
+
+	@Override
+	public void imageUpdated(ImagePlus imp) {
+	}
 	@Override
 	public void mousePressed(MouseEvent e) {		
 	}
@@ -369,5 +424,8 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	}
 	@Override
 	public void mouseExited(MouseEvent e) {		
+	}
+	@Override
+	public void keyTyped(KeyEvent e) {		
 	}
 }
