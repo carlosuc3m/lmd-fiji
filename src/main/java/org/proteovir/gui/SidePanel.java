@@ -27,8 +27,10 @@ import ai.nets.samj.communication.model.SAM2Tiny;
 import ai.nets.samj.models.AbstractSamJ;
 import ai.nets.samj.ui.SAMJLogger;
 import ij.IJ;
+import ij.IJEventListener;
 import ij.ImageListener;
 import ij.ImagePlus;
+import ij.WindowManager;
 import ij.gui.Roi;
 import ij.gui.Toolbar;
 import ij.plugin.CompositeConverter;
@@ -41,7 +43,7 @@ import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.util.Cast;
 
-public class SidePanel extends SidePanelGUI implements ActionListener, ImageListener, MouseListener, KeyListener {
+public class SidePanel extends SidePanelGUI implements ActionListener, ImageListener, MouseListener, KeyListener, IJEventListener {
 
     private static final long serialVersionUID = -8405747451234902128L;
     
@@ -155,6 +157,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		samjBtn.addActionListener(this);
 		activationBtn.addActionListener(this);
 		ImagePlus.addImageListener(this);
+    	IJ.addEventListener(this);
     }
 
 	public void setOpenImageConsumer(Function<File, Boolean> openIm) {
@@ -411,6 +414,23 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	    if (e.getKeyCode() == KeyEvent.VK_Y) {
 	        undoPressed = false;
 	    }
+	}
+	
+	@Override
+	public void eventOccurred(int eventID) {
+		if (eventID != IJEventListener.TOOL_CHANGED)
+			return;
+		boolean isvalid = IJ.getToolName().equals("rectangle") 
+				|| IJ.getToolName().equals("point") 
+				|| IJ.getToolName().equals("multipoint");
+		if (!isvalid && activationBtn.isEnabled()) {
+			this.activationBtn.setSelected(isvalid);
+			this.activationBtn.setEnabled(isvalid);
+			this.activationLabel.setText(ONLY_PROMPTS);
+		} else if (isvalid && !activationBtn.isEnabled() && WindowManager.getCurrentImage().equals(imp)) {
+			activationBtn.setEnabled(isvalid);
+			activationLabel.setText(ACTIVATE_TO_SEGMENT);
+		}
 	}
 
 	@Override
