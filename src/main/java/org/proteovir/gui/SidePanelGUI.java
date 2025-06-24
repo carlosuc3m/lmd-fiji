@@ -196,12 +196,23 @@ public class SidePanelGUI extends JPanel {
 			if (!success) {
 				activationBtn.setSelected(false);
 				activationLabel.setText(ERROR_ENCODING);
+			} else if (activationLabel.getText().equals(LOST_FOCUS)) {
+				activationBtn.setSelected(false);
+				activationBtn.setEnabled(false);
+				activationLabel.setText(LOST_FOCUS);
+				wasActive = false;
 			} else if (isValidPromptSelected()) {
 				activationBtn.setSelected(true);
 				activationLabel.setText(READY);
 				wasActive = true;
+			} else if (!isValidPromptSelected()){
+				activationBtn.setSelected(false);
+				activationBtn.setEnabled(false);
+				activationLabel.setText(ONLY_PROMPTS);
+				wasActive = false;
 			} else {
 				activationBtn.setSelected(false);
+				activationBtn.setEnabled(false);
 				activationLabel.setText(LOST_FOCUS);
 				wasActive = false;
 			}

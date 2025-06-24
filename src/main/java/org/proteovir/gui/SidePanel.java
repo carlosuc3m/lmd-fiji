@@ -383,8 +383,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
         	redoPressed = true;
         	try {
 	        	List<Mask> redoList = undoStack.peek();
-	        	int n = this.roiManager.getROIsNumber() - 1;
-	        	for (Mask pol : redoList) roiManager.delete(n --);
+	        	for (int n = this.roiManager.getROIsNumber() - 1; n >= 0; n --) roiManager.delete(n);
 	        	undoStack.pop();
 	        	redoStack.push(redoList);
 	        	this.redoAnnotatedMask.push(this.annotatedMask.peek());
@@ -428,7 +427,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 			this.activationBtn.setSelected(isvalid);
 			this.activationBtn.setEnabled(isvalid);
 			this.activationLabel.setText(ONLY_PROMPTS);
-		} else if (isvalid && !activationBtn.isEnabled() && WindowManager.getCurrentImage().equals(imp)) {
+		} else if (isvalid && samjBtn.isSelected() && !activationBtn.isEnabled() && WindowManager.getCurrentImage().equals(imp)) {
 			activationBtn.setEnabled(isvalid);
 			activationLabel.setText(ACTIVATE_TO_SEGMENT);
 		}
