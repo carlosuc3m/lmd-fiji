@@ -26,6 +26,8 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 
     private static final long serialVersionUID = -8405747451234902128L;
     
+    private Object image;
+    
     private RoiManagerConsumer consumer;
     
     private List<Mask> rois = new ArrayList<Mask>();
@@ -41,6 +43,7 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 		        return;
 		    rois.get(ii).clear();
 		    rois.get(ii).setContour(pol);
+		    consumer.setRois(rois, ii);
 		};
 		consumer.setModifyRoiCallback(mod);
     }
@@ -52,6 +55,10 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 		// TODO remove b.addKeyListener(IJ.getInstance());
 		b.addMouseListener(this);
 		panel.add(b);
+	}
+	
+	public void setImage(Object image) {
+		consumer.setImage(image);
 	}
 	
 	/**
@@ -104,7 +111,7 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 		updateShowAll();
 	}
 
-	private void updateShowAll() {
+	public void updateShowAll() {
 		if (showAllCheckbox.isSelected())
 			consumer.setRois(rois);
 		else

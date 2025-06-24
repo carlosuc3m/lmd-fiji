@@ -17,4 +17,6 @@ public interface RoiManagerConsumer {
 	public void deleteAllRois();
 	
 	public void setModifyRoiCallback(BiConsumer<Integer,Polygon> modifyRoiCallback);
+
+	public void setImage(Object image);
 }

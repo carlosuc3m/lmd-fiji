@@ -212,6 +212,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 					Img<?> image = ImageJFunctions.wrap(isColorRGB ? CompositeConverter.makeComposite(imp) : imp);
 					samj.setImage(Cast.unchecked(image), LOGGER);
 					samj.setReturnOnlyBiggest(true);
+					roiManager.setImage(imp);
 					guiAfterEnconding(true);
 				} catch (IOException | InterruptedException | RuntimeException e1) {
 					e1.printStackTrace();
@@ -230,8 +231,16 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	public void mouseReleased(MouseEvent e) {
 		if (e.getSource() == this.roiManager.getList())
 			return;
-		if (!wasActive || !alreadyFocused || imp.getRoi() == null)
+		if ((!wasActive || !alreadyFocused) && imp.getRoi() == null) {
+			//this.roiManager.updateShowAll();
 			return;
+		}
+		if ((!wasActive || !alreadyFocused) && imp.getRoi() != null) {
+			//Roi roi = imp.getRoi();
+			//this.roiManager.updateShowAll();
+			//imp.setRoi(roi);
+			return;
+		}
 		if (Toolbar.getToolName().equals("rectangle")) {
 			annotateRect();
 		} else if (Toolbar.getToolName().equals("point") || Toolbar.getToolName().equals("multipoint")) {
@@ -239,7 +248,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		} else {
 			return;
 		}
-		//if (!isCollectingPoints) imp.deleteRoi();
+		if (!isCollectingPoints) imp.deleteRoi();
 	}
 	
 	private void annotateRect() {
@@ -367,13 +376,12 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		if (e.getSource() != this.roiManager.getList())
-			return;
-		if (!activationBtn.isSelected())
-			return;
-		this.activationBtn.setSelected(false);
-		this.activationLabel.setText(ACTIVATE_TO_SEGMENT);
-		wasActive = false;
+		if (e.getSource() == this.roiManager.getList() && activationBtn.isSelected()) {
+			this.activationBtn.setSelected(false);
+			this.activationLabel.setText(ACTIVATE_TO_SEGMENT);
+			wasActive = false;
+		} else if (e.getSource().equals(imp.getCanvas()))
+				roiManager.updateShowAll();
 	}
 
 	@Override
@@ -432,12 +440,15 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 			activationLabel.setText(ACTIVATE_TO_SEGMENT);
 		}
 	}
-
+	
+	@Override
+	public void mousePressed(MouseEvent e) {
+		//if (e.getSource().equals(imp.getCanvas()))
+			//roiManager.updateShowAll();
+	}
+	
 	@Override
 	public void imageUpdated(ImagePlus imp) {
-	}
-	@Override
-	public void mousePressed(MouseEvent e) {		
 	}
 	@Override
 	public void mouseEntered(MouseEvent e) {		
