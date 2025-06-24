@@ -102,6 +102,19 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 		updateShowAll();
 	}
 
+	/** Deletes the ROI at 'index' and updates the display. */
+	public void delete(int[] indeces) {
+		int count = this.getROIsNumber();
+		for (int i = indeces.length - 1; i >= 0; i --) {
+			int index = indeces[i];
+			if (count == 0 || index >= count)
+				continue;
+			rois.remove(index);
+			listModel.remove(index);
+		}
+		updateShowAll();
+	}
+
 	private void updateShowAll() {
 		if (showAllCheckbox.isSelected() && getROIsNumber()>0)
 			consumer.setRois(rois);
@@ -156,8 +169,10 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 			addRoiFromGUI();
 		else if (command.equals("Simplify"))
 			simplify();
-		else if (command.equals("Delete") && list.getSelectedIndex() != -1)
+		else if (command.equals("Delete") && list.getSelectedIndex() != -1 && list.getSelectedIndices().length == 1)
 			delete(list.getSelectedIndex());
+		else if (command.equals("Delete") && list.getSelectedIndex() != -1 && list.getSelectedIndices().length != 1)
+			delete(list.getSelectedIndices());
 		else if (command.equals("Delete") && list.getSelectedIndex() == -1 && justClickedDelete)
 			deleteAll();
 		else if (command.equals("Delete") && list.getSelectedIndex() == -1) {

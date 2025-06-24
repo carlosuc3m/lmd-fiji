@@ -135,6 +135,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		
 		imageGUI.setOpenImageCallback(openIm);
 
+		roiManager.getList().addMouseListener(this);
 		samjBtn.addActionListener(this);
 		activationBtn.addActionListener(this);
 		ImagePlus.addImageListener(this);
@@ -210,6 +211,8 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
+		if (e.getSource() == this.roiManager.getList())
+			return;
 		if (!wasActive || !alreadyFocused || imp.getRoi() == null)
 			return;
 		if (Toolbar.getToolName().equals("rectangle")) {
@@ -349,7 +352,14 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	public void imageUpdated(ImagePlus imp) {
 	}
 	@Override
-	public void mouseClicked(MouseEvent e) {		
+	public void mouseClicked(MouseEvent e) {
+		if (e.getSource() != this.roiManager.getList())
+			return;
+		if (!activationBtn.isSelected())
+			return;
+		this.activationBtn.setSelected(false);
+		this.activationLabel.setText(ACTIVATE_TO_SEGMENT);
+		wasActive = false;
 	}
 	@Override
 	public void mousePressed(MouseEvent e) {		

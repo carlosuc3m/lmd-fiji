@@ -79,6 +79,10 @@ public abstract class RoiManagerGUI extends JPanel implements ListSelectionListe
 		labelsCheckbox.setEnabled(!block);
 		
 	}
+	
+	public JList<String> getList() {
+		return this.list;
+	}
 
 	protected abstract void addButton(String label);
 }
