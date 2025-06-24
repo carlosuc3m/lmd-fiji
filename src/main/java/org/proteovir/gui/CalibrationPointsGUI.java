@@ -48,19 +48,43 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener{
     private static final String SET_TEXT = "<html><span style=\\\"color: green;\\\">Calibration image %s set</span></html>";
     private static final String NOT_SET_TEXT = ""
     		+ "<html>"
-            + "Calibration image %s "
+            + "Calibration image and metadata %s "
             + "<span style=\"color: red;\">not set</span>"
             + "</html>";
+
+	private static final String IM_SET = ""
+    		+ "<html>"
+            + "Image %s metadata "
+            + "<span style=\"color: orange;\">not set</span>"
+            + "</html>";
+
+	private static final String META_SET = ""
+    		+ "<html>"
+            + "Calibration image %s "
+            + "<span style=\"color: orange;\">not set</span>"
+            + "</html>";
+
+	private static final String ALL_SET = ""
+    		+ "<html>"
+            + "<span style=\"color: green;\">Everything set</span>"
+            + "</html>";
+    
+    private static final String NOT_SET_IM = "Choose calibration image %s";
+    private static final String NOT_SET_META = "Choose metadata for calibration image %s";
+    private static final String ADD_IM = "Add image";
+    private static final String ADD_META = "Add metadata";
+    private static final String CHANGE_IM = "Change image";
+    private static final String CHANGE_META = "Change metadata";
 
 	public CalibrationPointsGUI(int n) {
         setLayout(null);
 		this.n = n;
 		title = new JLabel(String.format(NOT_SET_TEXT, "" + n));
-		imagePath = new PlaceholderTextField(String.format("Choose calibration image %s", "" + n));
-		metadataPath = new PlaceholderTextField(String.format("Choose metadata for calibration image %s", "" + n));
+		imagePath = new PlaceholderTextField(String.format(NOT_SET_IM, "" + n));
+		metadataPath = new PlaceholderTextField(String.format(NOT_SET_META, "" + n));
 
-		imageBtn = new JButton("Add image");
-		metaBtn = new JButton("Add metadata");
+		imageBtn = new JButton(ADD_IM);
+		metaBtn = new JButton(ADD_META);
 		
 		setBorder(BorderFactory.createLineBorder(Color.black, 1));
 		
@@ -78,7 +102,7 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener{
 					unblockAll();
 					CalibrationPointsGUI.this.imp = null;
 					if (calibrationPoint == null)
-						imagePath.setText("");
+						setDefault();
 				}
 			}
 
@@ -230,10 +254,42 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener{
 		this.metadataPath.setEnabled(!block);
 	}
 	
+	private void setDefault() {
+		title.setText(String.format(NOT_SET_TEXT, "" + n));
+		imagePath.setText("");
+		metadataPath.setText("");
+
+		imageBtn = new JButton(ADD_IM);
+		metaBtn = new JButton(ADD_META);
+	}
+	
+	private void setInfoState() {
+		if (calibrationPoint != null && true) {
+			title.setText(String.format(IM_SET, "" + n));
+			imageBtn.setText(CHANGE_IM);
+			metaBtn.setText(ADD_META);
+		} else if (calibrationPoint == null && false) {
+			title.setText(String.format(ALL_SET, "" + n));
+			imageBtn.setText(ADD_IM);
+			metaBtn.setText(CHANGE_META);
+		} else if (calibrationPoint != null && false) {
+			title.setText(String.format(META_SET, "" + n));
+			imageBtn.setText(CHANGE_IM);
+			metaBtn.setText(CHANGE_META);
+		} else {
+			setDefault();
+		}
+
+	}
+	
 	private void openImage(File file) {
 		try {
+			calibrationPoint = null;
 	        imp = IJ.openImage(file.getAbsolutePath());
 	        if (imp == null) {
+	        	IJ.error("File did not correspond to a valid image.");
+	        	imagePath.setTempPlaceholder("Select a valid image");
+	        	setInfoState();
 	            return;
 	        }
 	        imp.show();
@@ -242,14 +298,15 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener{
 	        if (!agreed) {
 	        	imp.getWindow().dispose();
 	        	imp.close();
-	        	this.imagePath.setText("");
 	        } else {
 		        blockOthers(imp.getWindow());
 		        IJ.setTool(Toolbar.POINT);
 		        imp.getCanvas().addMouseListener(this);
 	        }
 	    } catch (Exception ex) {
-	        // you can log ex here if you like
+	    	ex.printStackTrace();
+        	IJ.error("An error occurred");;
+    		setInfoState();
 	    }
 	}
 	
@@ -268,7 +325,6 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener{
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		calibrationPoint = null;
 		Roi roi = imp.getRoi();
     	if (roi != null) {
 	    	Iterator<java.awt.Point> iterator = roi.iterator();
@@ -277,6 +333,7 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener{
     	}
     	imp.getWindow().dispose();
     	imp.close();
+		setInfoState();
 	}
 
 	@Override
