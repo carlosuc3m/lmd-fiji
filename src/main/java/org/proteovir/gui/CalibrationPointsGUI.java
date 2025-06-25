@@ -16,7 +16,10 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.proteovir.gui.components.PlaceholderTextField;
 import org.proteovir.metadata.ImageMetaParser;
@@ -28,13 +31,17 @@ import ij.gui.Roi;
 import ij.gui.Toolbar;
 import io.bioimage.modelrunner.gui.YesNoDialog;
 
-public class CalibrationPointsGUI extends JPanel implements MouseListener{
+public class CalibrationPointsGUI extends JPanel implements MouseListener, DocumentListener {
 
     private static final long serialVersionUID = -8405747451234902128L;
     
     private final int n;
     
     private int[] calibrationPoint;
+    
+    private boolean good = false;
+    
+    private Runnable callback;
     
     private ImagePlus imp;
     private ImageMetaParser meta;
@@ -83,7 +90,9 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener{
 		this.n = n;
 		title = new JLabel(String.format(NOT_SET_TEXT, "" + n));
 		imagePath = new PlaceholderTextField(String.format(NOT_SET_IM, "" + n));
+		imagePath.getDocument().addDocumentListener(this);
 		metadataPath = new PlaceholderTextField(String.format(NOT_SET_META, "" + n));
+		metadataPath.getDocument().addDocumentListener(this);
 
 		imageBtn = new JButton(ADD_IM);
 		metaBtn = new JButton(ADD_META);
@@ -103,8 +112,7 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener{
 				if (CalibrationPointsGUI.this.imp != null && imp.equals(CalibrationPointsGUI.this.imp)) {
 					unblockAll();
 					CalibrationPointsGUI.this.imp = null;
-					if (calibrationPoint == null)
-						setDefault();
+					setInfoState();
 				}
 			}
 
@@ -245,6 +253,14 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener{
         metadataPath.setBounds(inset, y, pathW, metaH - inset);
         metaBtn.setBounds(inset + pathW + inset, y, btnW, metaH - inset);
 	}
+	
+	public boolean isCalibrated() {
+		return good;
+	}
+	
+	public void setCallback(Runnable callback) {
+		this.callback = callback;
+	}
 
 	public void setTargetSet(boolean b) {
 		if (b)
@@ -262,31 +278,40 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener{
 		this.metadataPath.setEnabled(!block);
 	}
 	
-	private void setDefault() {
+	private void setDefault(boolean modifyTextField) {
 		title.setText(String.format(NOT_SET_TEXT, "" + n));
-		imagePath.setText("");
-		metadataPath.setText("");
+		if (modifyTextField) imagePath.setText("");
+		if (modifyTextField) metadataPath.setText("");
 
 		imageBtn = new JButton(ADD_IM);
 		metaBtn = new JButton(ADD_META);
 	}
 	
 	private void setInfoState() {
-		if (calibrationPoint != null && true) {
+		setInfoState(true);
+	}
+	
+	private void setInfoState(boolean modifyTextField) {
+		good = false;
+		if (calibrationPoint != null && meta == null) {
 			title.setText(String.format(IM_SET, "" + n));
 			imageBtn.setText(CHANGE_IM);
 			metaBtn.setText(ADD_META);
+			if (modifyTextField) metadataPath.setText("");
 		} else if (calibrationPoint == null && meta != null) {
 			title.setText(String.format(META_SET, "" + n));
 			imageBtn.setText(ADD_IM);
 			metaBtn.setText(CHANGE_META);
+			if (modifyTextField) imagePath.setText("");
 		} else if (calibrationPoint != null && meta != null) {
 			title.setText(String.format(ALL_SET, "" + n));
 			imageBtn.setText(CHANGE_IM);
 			metaBtn.setText(CHANGE_META);
+			good = true;
 		} else {
-			setDefault();
+			setDefault(modifyTextField);
 		}
+		callback.run();
 	}
 	
 	private void openMeta(File file) {
@@ -299,9 +324,12 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener{
 		}
 		try {
 			meta = new ImageMetaParser(file.getAbsolutePath(), "µm");
+        	setInfoState();
 		} catch (Exception e) {
 			e.printStackTrace();
 			IJ.error("Please select a valid properties.xml file.");
+        	metadataPath.setTempPlaceholder("Select a valid .xml file");
+        	setInfoState();
 			
 		}
 	}
@@ -346,6 +374,18 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener{
             w.setEnabled(true);
         }
     }
+    
+    private void onChange(DocumentEvent e) {
+        SwingUtilities.invokeLater(() -> {
+        	if (e.getDocument().equals(metadataPath.getDocument()) && meta != null) {
+        		meta = null;
+        		setInfoState();
+        	} else if (e.getDocument().equals(imagePath.getDocument()) && calibrationPoint != null) {
+        		calibrationPoint = null;
+        		setInfoState(false);
+        	}
+        });
+    }
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
@@ -361,18 +401,29 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener{
 	}
 
 	@Override
-	public void mousePressed(MouseEvent e) {
+	public void insertUpdate(DocumentEvent e) {
+		onChange(e);
 	}
 
 	@Override
-	public void mouseReleased(MouseEvent e) {
+	public void removeUpdate(DocumentEvent e) {
+		onChange(e);
 	}
 
 	@Override
-	public void mouseEntered(MouseEvent e) {
+	public void changedUpdate(DocumentEvent e) {
+		onChange(e);
 	}
 
 	@Override
-	public void mouseExited(MouseEvent e) {
-	}
+	public void mousePressed(MouseEvent e) {}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {}
+
+	@Override
+	public void mouseExited(MouseEvent e) {}
 }

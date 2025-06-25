@@ -79,6 +79,15 @@ public abstract class RoiManagerGUI extends JPanel implements ListSelectionListe
 		labelsCheckbox.setEnabled(!block);
 		
 	}
+
+	public void setExportLMDEnabled(boolean isCalibrated) {
+		for (JButton b : btns) {
+			if (b.getText().equals("Export LMD")) {
+				b.setEnabled(isCalibrated);
+				break;
+			}
+		}		
+	}
 	
 	public JList<String> getList() {
 		return this.list;

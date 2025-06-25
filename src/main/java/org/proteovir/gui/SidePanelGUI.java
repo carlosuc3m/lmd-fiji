@@ -38,6 +38,16 @@ public class SidePanelGUI extends JPanel {
     
     protected RoiManager roiManager;
     
+    protected static final String NOT_CALIBRATED = ""
+    		+ "<html>"
+    		+ "<span style=\"color: red;\">&#9888; Calibration points not set</span>"
+    		+ "</html>";
+    
+    protected static final String CALIBRATED = ""
+    		+ "<html>"
+    		+ "<span style=\"color: green;\">&#9888; Calibration points ready</span>"
+    		+ "</html>";
+    
     protected static final String LOST_FOCUS = ""
     		+ "<html>"
     		+ "<span style=\"color: orange;\">&#9888; Focus again on target image</span>"
@@ -101,7 +111,14 @@ public class SidePanelGUI extends JPanel {
 		if (consumer == null)
 			consumer = new RoiManagerIJ();
 		
-		statusLabel = new JLabel("Calibration points not set");
+		statusLabel = new JLabel(NOT_CALIBRATED);
+		Runnable callback = () -> {
+			boolean allGood = firstCalibration.isCalibrated() 
+					&& secondCalibration.isCalibrated() 
+					&& thirdCalibration.isCalibrated();
+			setCalibrated(allGood);
+			
+		};
 		firstCalibration = new CalibrationPointsGUI(1);
 		secondCalibration = new CalibrationPointsGUI(2);
 		thirdCalibration = new CalibrationPointsGUI(3);
@@ -164,6 +181,15 @@ public class SidePanelGUI extends JPanel {
         y = statusH + calH * 3 + imH + samjH + actH + actLabelH;
 
         roiManager.setBounds(inset, y, w, roiH - inset);
+	}
+	
+	protected void setCalibrated(boolean isCalibrated) {
+		if (isCalibrated)
+			statusLabel.setText(CALIBRATED);
+		else
+			statusLabel.setText(NOT_CALIBRATED);
+		if (roiManager.getList().isEnabled())
+			roiManager.setExportLMDEnabled(isCalibrated);
 	}
 	
 	protected void blockToEncode(boolean block) {
