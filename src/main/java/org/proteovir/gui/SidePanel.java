@@ -422,6 +422,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		roiManager.block(true);
 		this.imp = null;
 		alreadyFocused = false;
+		imageGUI.setInfoState(false);
 	}
 	
 	@Override
