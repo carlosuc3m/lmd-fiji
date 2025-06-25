@@ -136,11 +136,15 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener{
 		});
 		
 		metaBtn.addActionListener(e -> {
-			if (new File(imagePath.getText()).isFile()) {
+			if (new File(metadataPath.getText()).isFile()) {
 				openMeta(new File(metadataPath.getText()));
 		        return;
 			}
-		    JFileChooser chooser = new JFileChooser("");
+		    JFileChooser chooser;
+		    if (new File(metadataPath.getText()).isDirectory())
+		    	chooser = new JFileChooser(metadataPath.getText());
+	    	else
+		    	chooser = new JFileChooser();
 		    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
 		    int result = chooser.showOpenDialog(metaBtn.getParent());

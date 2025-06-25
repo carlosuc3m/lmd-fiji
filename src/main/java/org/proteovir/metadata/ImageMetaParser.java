@@ -3,6 +3,10 @@ package org.proteovir.metadata;
 import java.io.File;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -28,53 +32,40 @@ public class ImageMetaParser {
      * @throws Exception on file errors or parsing failures
      */
     public ImageMetaParser(String imageFile, String unit) throws Exception {
-        File file = new File(imageFile);
-        if (!file.exists()) {
+        File metaFile = new File(imageFile);
+        if (!metaFile.exists()) {
             throw new IllegalArgumentException("File does not exist: " + imageFile);
         }
 
-        String name = file.getName();
-        int dotIndex = name.lastIndexOf('.');
+        String name = metaFile.getName();
+        int dotIndex = name.lastIndexOf(".xml");
         if (dotIndex < 0) {
-            throw new IllegalArgumentException("File has no extension");
+            throw new IllegalArgumentException("File is not an .xml");
         }
-        String ext = name.substring(dotIndex);
-        this.filename = name.substring(0, dotIndex);
+        
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(false);
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document doc = db.parse(metaFile);
 
-        if (!ext.matches("(?i)\\\\.tiff?")) {
-            throw new IllegalArgumentException("File not a TIFF: " + ext);
-        }
+        // 2. Prepare XPath
+        XPath xpath = XPathFactory.newInstance().newXPath();
 
-        File metaFile = new File(file.getParentFile(), "MetaData" + File.separator + this.filename + "_Properties.xml");
-        if (!metaFile.exists()) {
-            throw new IllegalArgumentException("No metadata file found at " + metaFile.getPath());
-        }
+        // 3. XPath expressions for X and Y lengths
+        String exprX = "/Data/Image/ImageDescription/Dimensions/DimensionDescription[@DimID='X']/@%s";
+        String exprY = "/Data/Image/ImageDescription/Dimensions/DimensionDescription[@DimID='Y']/@%s";
 
-        // Parse XML
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-        Document doc = dBuilder.parse(metaFile);
-        doc.getDocumentElement().normalize();
-
-        // Extract TileScanInfo
-        NodeList attachments = doc.getElementsByTagName("Attachment");
-        Element tileScanInfo = getElementByAttribute(attachments, "Name", "TileScanInfo");
-        Element tile = (Element) tileScanInfo.getElementsByTagName("Tile").item(0);
-        String posXStr = tile.getAttribute("PosX");
-        String posYStr = tile.getAttribute("PosY");
-
-        // Extract Dimensions
-        NodeList dimsList = doc.getElementsByTagName("Dimensions");
-        Element dimsElem = (Element) dimsList.item(0);
-        NodeList dims = dimsElem.getElementsByTagName("Dimension");
-        Element dimX = getElementByAttribute(dims, "DimID", "X");
-        Element dimY = getElementByAttribute(dims, "DimID", "Y");
-        String lenXStr = dimX.getAttribute("Length");
-        String voxelXStr = dimX.getAttribute("Voxel");
-        String numXStr = dimX.getAttribute("NumberOfElements");
-        String lenYStr = dimY.getAttribute("Length");
-        String voxelYStr = dimY.getAttribute("Voxel");
-        String numYStr = dimY.getAttribute("NumberOfElements");
+        // 4. Evaluate
+        String lenXStr = (String) xpath.evaluate(String.format(exprX, "Length"), doc, XPathConstants.STRING);
+        String lenYStr = (String) xpath.evaluate(String.format(exprY, "Length"), doc, XPathConstants.STRING);
+        String voxelXStr = (String) xpath.evaluate(String.format(exprX, "Voxel"), doc, XPathConstants.STRING);
+        String voxelYStr = (String) xpath.evaluate(String.format(exprY, "Voxel"), doc, XPathConstants.STRING);
+        String numXStr = (String) xpath.evaluate(String.format(exprX, "NumberOfElements"), doc, XPathConstants.STRING);
+        String numYStr = (String) xpath.evaluate(String.format(exprY, "NumberOfElements"), doc, XPathConstants.STRING);
+        
+        String posX = "";//tile.getAttribute("PosX");
+        String posY = "";//tile.getAttribute("PosY");
+        
 
         // Unit conversion factors
         double posFac, dimFac;
@@ -91,8 +82,8 @@ public class ImageMetaParser {
         }
 
         // Populate fields
-        this.tilePosX = parseCsn(posXStr) * posFac;
-        this.tilePosY = parseCsn(posYStr) * posFac;
+        this.tilePosX = parseCsn(posX) * posFac;
+        this.tilePosY = parseCsn(posY) * posFac;
         this.tileDimX = parseCsn(lenXStr) * dimFac;
         this.tileDimY = parseCsn(lenYStr) * dimFac;
         this.pixelSizeX = parseCsn(voxelXStr) * dimFac;
