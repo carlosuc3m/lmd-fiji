@@ -2,7 +2,6 @@ package org.proteovir.gui;
 
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.List;
 import java.util.function.Function;
@@ -21,19 +20,17 @@ import org.proteovir.gui.components.PlaceholderTextField;
 import org.proteovir.metadata.ImageMetaParser;
 
 import ij.IJ;
-import ij.gui.Toolbar;
-import io.bioimage.modelrunner.gui.YesNoDialog;
 
 public class ImageGUI extends JPanel implements DocumentListener {
 	
 	private boolean good = false;
+	private boolean isCalibrated = false;
 	
 	private boolean imSet = false;
 	private ImageMetaParser meta;
     private String calImage;
     private String calMeta;
 
-    private Runnable infoCallback;
 	Function<File, Boolean> openImageCallback;
     
     JLabel title;
@@ -52,7 +49,7 @@ public class ImageGUI extends JPanel implements DocumentListener {
     		+ "<span style=\\\"color: green;\\\">Ready to segment and export</span>"
     		+ "</html>";
 
-    private static final String CALIBRATION_NOT_SET = ""
+    protected static final String CALIBRATION_NOT_SET = ""
     		+ "<html>"
     		+ "<span style=\\\"color: orange;\\\">Calibration missing</span>"
     		+ "</html>";
@@ -86,9 +83,7 @@ public class ImageGUI extends JPanel implements DocumentListener {
 		
 		imageBtn.addActionListener(e -> {
 			if (new File(imagePath.getText()).isFile() && !imSet) {
-	            if (openImageCallback != null)
-	            	openImageCallback.apply(new File(imagePath.getText()));
-	            if (imSet) calImage = imagePath.getText();
+				openImage(imagePath.getText()); 
 		        return;
 			}
 		    JFileChooser chooser;
@@ -102,8 +97,7 @@ public class ImageGUI extends JPanel implements DocumentListener {
 		    if (result == JFileChooser.APPROVE_OPTION) {
 		        File selected = chooser.getSelectedFile();
 		        imagePath.setText(selected.getAbsolutePath());
-	            if (openImageCallback != null)
-	            	openImageCallback.apply(selected);
+		        openImage(selected.getAbsolutePath());
 		    }
 		});
 		
@@ -123,6 +117,7 @@ public class ImageGUI extends JPanel implements DocumentListener {
 		    if (result == JFileChooser.APPROVE_OPTION) {
 		        File selected = chooser.getSelectedFile();
 		        metadataPath.setText(selected.getAbsolutePath());
+		        openMeta(selected.getAbsolutePath());
 		    }
 		});
 		
@@ -150,14 +145,9 @@ public class ImageGUI extends JPanel implements DocumentListener {
 		            }
 
 		            File f = files.get(0);
-		            if (openImageCallback == null)
-		            	throw new RuntimeException("There is no way to open the selected image");
-		            boolean isImage = openImageCallback.apply(f);
-		            if (isImage)
-		            	imagePath.setText(f.getAbsolutePath());
-		            else 
-		            	imagePath.setTempPlaceholder("Choose a valid image");
-		            return isImage;
+	            	imagePath.setText(f.getAbsolutePath());
+					openImage(f.getAbsolutePath());
+		            return true;
 		        } catch (Exception ex) {
 		            ex.printStackTrace();
 		            return false;
@@ -229,10 +219,6 @@ public class ImageGUI extends JPanel implements DocumentListener {
 	public void setOpenImageCallback(Function<File, Boolean> openIm) {
 		openImageCallback = openIm;
 	}
-	
-	public void setInfoCallback(Runnable infoCallback) {
-		this.infoCallback = infoCallback;
-	}
 
 	public void setTargetSet(boolean b) {
 		if (b) {
@@ -242,6 +228,11 @@ public class ImageGUI extends JPanel implements DocumentListener {
 			title.setText(NOT_SET_TEXT);
 			imSet = false;
 		}
+	}
+	
+	public void setCalibrated(boolean isCalibrated) {
+		this.isCalibrated = isCalibrated;
+		setInfoState(false);
 	}
 	
 	public void block(boolean block) {
@@ -266,7 +257,7 @@ public class ImageGUI extends JPanel implements DocumentListener {
 		setInfoState(true);
 	}
 	
-	private void setInfoState(boolean modifyTextField) {
+	protected void setInfoState(boolean modifyTextField) {
 		good = false;
 		if (imSet && meta == null) {
 			title.setText(META_NOT_SET_TEXT);
@@ -278,6 +269,11 @@ public class ImageGUI extends JPanel implements DocumentListener {
 			imageBtn.setText(ADD_IM);
 			metaBtn.setText(CHANGE_META);
 			if (modifyTextField) imagePath.setText("");
+		} else if (imSet && meta != null && !isCalibrated) {
+			title.setText(CALIBRATION_NOT_SET);
+			imageBtn.setText(CHANGE_IM);
+			metaBtn.setText(CHANGE_META);
+			good = true;
 		} else if (imSet && meta != null) {
 			title.setText(ALL_SET);
 			imageBtn.setText(CHANGE_IM);
@@ -286,7 +282,6 @@ public class ImageGUI extends JPanel implements DocumentListener {
 		} else {
 			setDefault(modifyTextField);
 		}
-		this.infoCallback.run();
 	}
 	
 	private synchronized void openMeta(String strFile) {
@@ -314,32 +309,23 @@ public class ImageGUI extends JPanel implements DocumentListener {
 	
 	private synchronized void openImage(String strFile) {
 		try {
-			imSet = null;
+			imSet = false;
 			calImage = null;
-			File file = new File(strFile);
-	        imp = IJ.openImage(file.getAbsolutePath());
-	        if (imp == null) {
-	        	IJ.error("File did not correspond to a valid image.");
-	        	setInfoState();
-	        	imagePath.setTempPlaceholder("Select a valid image");
-	            return;
-	        }
-	        imp.show();
-	        boolean agreed = YesNoDialog.askQuestion("Select calibration point", 
-	        		String.format("Click on the place of calibration point %s", n));
-	        if (!agreed) {
-	        	imp.getWindow().dispose();
-	        	imp.close();
-	        } else {
-	        	calImage = strFile;
-		        blockOthers(imp.getWindow());
-		        IJ.setTool(Toolbar.POINT);
-		        imp.getCanvas().addMouseListener(this);
-	        }
+            if (openImageCallback == null) {
+        		setInfoState();
+        		return;
+            }
+            imSet = openImageCallback.apply(new File(strFile));
+            if (imSet)
+            	calImage = strFile;
+    		setInfoState();
+    		if (!imSet)
+            	imagePath.setTempPlaceholder("Choose a valid image");
 	    } catch (Exception ex) {
 	    	ex.printStackTrace();
-        	IJ.error("An error occurred");;
+        	IJ.error("An error occurred");
     		setInfoState();
+        	imagePath.setTempPlaceholder("Choose a valid image");
 	    }
 	}
     
