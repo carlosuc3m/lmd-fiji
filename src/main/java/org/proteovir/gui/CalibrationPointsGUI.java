@@ -57,7 +57,6 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
     
 
 
-    private static final String SET_TEXT = "<html><span style=\\\"color: green;\\\">Calibration image %s set</span></html>";
     private static final String NOT_SET_TEXT = ""
     		+ "<html>"
             + "Calibration image and metadata %s "
@@ -264,13 +263,6 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
 	public void setCallback(Runnable callback) {
 		this.callback = callback;
 	}
-
-	public void setTargetSet(boolean b) {
-		if (b)
-			title.setText(String.format(SET_TEXT, n));
-		else
-			title.setText(String.format(NOT_SET_TEXT, n));
-	}
 	
 	public void block(boolean block) {
 		this.imageBtn.setEnabled(!block);
@@ -323,8 +315,8 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
 		File file = new File(strFile);
 		if (!file.isFile() || !file.getAbsolutePath().endsWith(".xml")) {
         	IJ.error("File did not correspond to a valid image.");
-        	metadataPath.setTempPlaceholder("Select a valid .xml file");
         	setInfoState();
+        	metadataPath.setTempPlaceholder("Select a valid .xml file");
             return;
 		}
 		try {
@@ -334,8 +326,8 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
 		} catch (Exception e) {
 			e.printStackTrace();
 			IJ.error("Please select a valid properties.xml file.");
-        	metadataPath.setTempPlaceholder("Select a valid .xml file");
         	setInfoState();
+        	metadataPath.setTempPlaceholder("Select a valid .xml file");
 			
 		}
 	}
@@ -348,8 +340,8 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
 	        imp = IJ.openImage(file.getAbsolutePath());
 	        if (imp == null) {
 	        	IJ.error("File did not correspond to a valid image.");
-	        	imagePath.setTempPlaceholder("Select a valid image");
 	        	setInfoState();
+	        	imagePath.setTempPlaceholder("Select a valid image");
 	            return;
 	        }
 	        imp.show();
