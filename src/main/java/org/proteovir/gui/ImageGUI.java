@@ -10,6 +10,7 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.event.DocumentEvent;
@@ -31,7 +32,8 @@ public class ImageGUI extends JPanel implements DocumentListener {
     private String calImage;
     private String calMeta;
 
-	Function<File, Boolean> openImageCallback;
+    private Runnable changeImageCallback;
+	private Function<File, Boolean> openImageCallback;
     
     JLabel title;
     PlaceholderTextField imagePath;
@@ -46,12 +48,12 @@ public class ImageGUI extends JPanel implements DocumentListener {
     
     private static final String ALL_SET = ""
     		+ "<html>"
-    		+ "<span style=\\\"color: green;\\\">Ready to segment and export</span>"
+    		+ "<span style=\"color: green;\">Ready to annotate  and export</span>"
     		+ "</html>";
 
     protected static final String CALIBRATION_NOT_SET = ""
     		+ "<html>"
-    		+ "<span style=\\\"color: orange;\\\">Calibration missing</span>"
+    		+ "<span style=\"color: purple;\">Calibration missing</span>"
     		+ "</html>";
     private static final String NOT_SET_TEXT = ""
     		+ "<html>"
@@ -69,9 +71,13 @@ public class ImageGUI extends JPanel implements DocumentListener {
 	public ImageGUI() {
         setLayout(null);
 		title = new JLabel(NOT_SET_TEXT);
+		title.setHorizontalAlignment(SwingConstants.CENTER);
+		title.setVerticalAlignment(SwingConstants.CENTER);
 		imagePath = new PlaceholderTextField("Choose target image");
+		imagePath.getDocument().addDocumentListener(this);
 		metadataPath = new PlaceholderTextField("Choose metadata for target image");
-
+		metadataPath.getDocument().addDocumentListener(this);
+		
 		imageBtn = new JButton("Add image");
 		metaBtn = new JButton("Add metadata");
 		
@@ -215,19 +221,17 @@ public class ImageGUI extends JPanel implements DocumentListener {
 	public boolean isDefined() {
 		return good;
 	}
+	
+	public void setChangeImageCallback(Runnable changeImageCallback) {
+		this.changeImageCallback = changeImageCallback;
+	}
 
 	public void setOpenImageCallback(Function<File, Boolean> openIm) {
 		openImageCallback = openIm;
 	}
 
 	public void setTargetSet(boolean b) {
-		if (b) {
-			title.setText(ALL_SET);
-			imSet = true;
-		} else {
-			title.setText(NOT_SET_TEXT);
-			imSet = false;
-		}
+		imSet = b;
 	}
 	
 	public void setCalibrated(boolean isCalibrated) {
@@ -340,6 +344,7 @@ public class ImageGUI extends JPanel implements DocumentListener {
 	        	} else if (e.getDocument().equals(imagePath.getDocument()) && imSet
 	        			&& (calImage == null || !calImage.equals(str))) {
 	        		imSet = false;
+	        		changeImageCallback.run();
 	        		setInfoState(false);
 	        	}
 			} catch (BadLocationException e1) {

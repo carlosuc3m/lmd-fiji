@@ -119,6 +119,7 @@ public class SidePanelGUI extends JPanel {
 					&& secondCalibration.isCalibrated() 
 					&& thirdCalibration.isCalibrated();
 			setCalibrated(allGood);
+			imageGUI.setCalibrated(allGood);
 			
 		};
 		firstCalibration = new CalibrationPointsGUI(1);

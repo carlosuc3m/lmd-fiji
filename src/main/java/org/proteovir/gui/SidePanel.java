@@ -131,7 +131,21 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	    }
 	};
 	
-	Consumer<Boolean> activationCallback = (bool) -> {
+	private Runnable closeSAMJCallback = () -> {
+		if (samj != null && samj.isLoaded())
+			samj.closeProcess();
+		wasActive = false;
+		activationBtn.setSelected(false);
+		activationBtn.setEnabled(false);
+		samjBtn.setEnabled(false);
+		samjBtn.setSelected(false);
+		activationLabel.setText(OPEN_TARGET);
+		roiManager.block(true);
+		this.imp = null;
+		alreadyFocused = false;
+	};
+	
+	private Consumer<Boolean> activationCallback = (bool) -> {
 		wasActive = bool;
 	};
 
@@ -146,6 +160,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		
 		activationBtn.setSelectionCallback(activationCallback);
 		imageGUI.setOpenImageCallback(openIm);
+		imageGUI.setChangeImageCallback(closeSAMJCallback);
 
 		roiManager.getList().addMouseListener(this);
 		samjBtn.addActionListener(this);
