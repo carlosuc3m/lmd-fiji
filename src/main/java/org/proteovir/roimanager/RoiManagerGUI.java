@@ -24,6 +24,8 @@ public abstract class RoiManagerGUI extends JPanel implements ListSelectionListe
 
     private static final long serialVersionUID = -8405747451234902128L;
     
+    protected boolean calibrationReady = false;
+    
     protected DefaultListModel<String> listModel;
     protected JList<String> list;
     protected JPanel panel;
@@ -72,15 +74,21 @@ public abstract class RoiManagerGUI extends JPanel implements ListSelectionListe
     }
 	
 	public void block(boolean block) {
-		for (JButton b : btns)
+		for (JButton b : btns) {
+			if (!block && !calibrationReady && b.getText().equals("Export LMD"))
+				continue;
 			b.setEnabled(!block);
+		}
 		list.setEnabled(!block);
 		showAllCheckbox.setEnabled(!block);
 		labelsCheckbox.setEnabled(!block);
 		
 	}
 
-	public void setExportLMDEnabled(boolean isCalibrated) {
+	public void readyToExport(boolean isCalibrated) {
+		calibrationReady = isCalibrated;
+		if (!this.list.isEnabled())
+			return;
 		for (JButton b : btns) {
 			if (b.getText().equals("Export LMD")) {
 				b.setEnabled(isCalibrated);

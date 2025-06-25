@@ -194,8 +194,7 @@ public class SidePanelGUI extends JPanel {
 			statusLabel.setText(CALIBRATED);
 		else
 			statusLabel.setText(NOT_CALIBRATED);
-		if (roiManager.getList().isEnabled())
-			roiManager.setExportLMDEnabled(isCalibrated);
+		roiManager.readyToExport(isCalibrated && imageGUI.isDefined());
 	}
 	
 	protected void blockToEncode(boolean block) {
