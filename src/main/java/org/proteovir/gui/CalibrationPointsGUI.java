@@ -20,6 +20,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
 
 import org.proteovir.gui.components.PlaceholderTextField;
 import org.proteovir.metadata.ImageMetaParser;
@@ -36,15 +37,17 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
     private static final long serialVersionUID = -8405747451234902128L;
     
     private final int n;
-    
+
+    private ImagePlus imp;
+    private ImageMetaParser meta;
+    private String calMeta;
     private int[] calibrationPoint;
+    private String calImage;
     
     private boolean good = false;
     
     private Runnable callback;
     
-    private ImagePlus imp;
-    private ImageMetaParser meta;
     
     JLabel title;
     PlaceholderTextField imagePath;
@@ -124,8 +127,8 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
         });
 		
 		imageBtn.addActionListener(e -> {
-			if (new File(imagePath.getText()).isFile()) {
-		        openImage(new File(imagePath.getText()));
+			if (new File(imagePath.getText()).isFile() && calibrationPoint == null) {
+		        openImage(imagePath.getText());
 		        return;
 			}
 		    JFileChooser chooser;
@@ -139,13 +142,13 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
 		    if (result == JFileChooser.APPROVE_OPTION) {
 		        File selected = chooser.getSelectedFile();
 		        imagePath.setText(selected.getAbsolutePath());
-		        openImage(selected);
+		        openImage(selected.getAbsolutePath());
 		    }
 		});
 		
 		metaBtn.addActionListener(e -> {
-			if (new File(metadataPath.getText()).isFile()) {
-				openMeta(new File(metadataPath.getText()));
+			if (new File(metadataPath.getText()).isFile() && meta == null) {
+				openMeta(metadataPath.getText());
 		        return;
 			}
 		    JFileChooser chooser;
@@ -159,7 +162,7 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
 		    if (result == JFileChooser.APPROVE_OPTION) {
 		        File selected = chooser.getSelectedFile();
 		        metadataPath.setText(selected.getAbsolutePath());
-		        openMeta(selected);
+		        openMeta(selected.getAbsolutePath());
 		    }
 		});
 		
@@ -188,7 +191,7 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
 
 		            File f = files.get(0);
 		            imagePath.setText(f.getAbsolutePath());
-			        openImage(f);
+			        openImage(f.getAbsolutePath());
 		            return true;
 		        } catch (Exception ex) {
 		            ex.printStackTrace();
@@ -222,7 +225,7 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
 
 		            File f = files.get(0);
 		            metadataPath.setText(f.getAbsolutePath());
-			        openMeta(f);
+			        openMeta(f.getAbsolutePath());
 		            return true;
 		        } catch (Exception ex) {
 		            ex.printStackTrace();
@@ -283,8 +286,8 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
 		if (modifyTextField) imagePath.setText("");
 		if (modifyTextField) metadataPath.setText("");
 
-		imageBtn = new JButton(ADD_IM);
-		metaBtn = new JButton(ADD_META);
+		imageBtn.setText(ADD_IM);
+		metaBtn.setText(ADD_META);
 	}
 	
 	private void setInfoState() {
@@ -314,8 +317,10 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
 		callback.run();
 	}
 	
-	private void openMeta(File file) {
+	private synchronized void openMeta(String strFile) {
 		meta = null;
+		calMeta = null;
+		File file = new File(strFile);
 		if (!file.isFile() || !file.getAbsolutePath().endsWith(".xml")) {
         	IJ.error("File did not correspond to a valid image.");
         	metadataPath.setTempPlaceholder("Select a valid .xml file");
@@ -324,6 +329,7 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
 		}
 		try {
 			meta = new ImageMetaParser(file.getAbsolutePath(), "µm");
+			calMeta = strFile;
         	setInfoState();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -334,9 +340,11 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
 		}
 	}
 	
-	private void openImage(File file) {
+	private synchronized void openImage(String strFile) {
 		try {
 			calibrationPoint = null;
+			calImage = null;
+			File file = new File(strFile);
 	        imp = IJ.openImage(file.getAbsolutePath());
 	        if (imp == null) {
 	        	IJ.error("File did not correspond to a valid image.");
@@ -351,6 +359,7 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
 	        	imp.getWindow().dispose();
 	        	imp.close();
 	        } else {
+	        	calImage = strFile;
 		        blockOthers(imp.getWindow());
 		        IJ.setTool(Toolbar.POINT);
 		        imp.getCanvas().addMouseListener(this);
@@ -375,15 +384,23 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
         }
     }
     
-    private void onChange(DocumentEvent e) {
+    private synchronized void onChange(DocumentEvent e) {
         SwingUtilities.invokeLater(() -> {
-        	if (e.getDocument().equals(metadataPath.getDocument()) && meta != null) {
-        		meta = null;
-        		setInfoState();
-        	} else if (e.getDocument().equals(imagePath.getDocument()) && calibrationPoint != null) {
-        		calibrationPoint = null;
-        		setInfoState(false);
-        	}
+        	try {
+				String str = e.getDocument().getText(0, e.getDocument().getLength());
+	        	if (e.getDocument().equals(metadataPath.getDocument()) && meta != null
+	        			&& (calMeta == null || !calMeta.equals(str))) {
+	        		meta = null;
+	        		setInfoState(false);
+	        	} else if (e.getDocument().equals(imagePath.getDocument()) && calibrationPoint != null
+	        			&& (calImage == null || !calImage.equals(str))) {
+	        		calibrationPoint = null;
+	        		setInfoState(false);
+	        	}
+			} catch (BadLocationException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
         });
     }
 

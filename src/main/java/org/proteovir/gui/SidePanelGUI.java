@@ -45,7 +45,7 @@ public class SidePanelGUI extends JPanel {
     
     protected static final String CALIBRATED = ""
     		+ "<html>"
-    		+ "<span style=\"color: green;\">&#9888; Calibration points ready</span>"
+    		+ "<span style=\"color: green;\">&#x2714; Calibration points ready</span>"
     		+ "</html>";
     
     protected static final String LOST_FOCUS = ""
@@ -112,6 +112,8 @@ public class SidePanelGUI extends JPanel {
 			consumer = new RoiManagerIJ();
 		
 		statusLabel = new JLabel(NOT_CALIBRATED);
+		statusLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		statusLabel.setVerticalAlignment(SwingConstants.CENTER);
 		Runnable callback = () -> {
 			boolean allGood = firstCalibration.isCalibrated() 
 					&& secondCalibration.isCalibrated() 
@@ -120,8 +122,11 @@ public class SidePanelGUI extends JPanel {
 			
 		};
 		firstCalibration = new CalibrationPointsGUI(1);
+		firstCalibration.setCallback(callback);
 		secondCalibration = new CalibrationPointsGUI(2);
+		secondCalibration.setCallback(callback);
 		thirdCalibration = new CalibrationPointsGUI(3);
+		thirdCalibration.setCallback(callback);
 		
 		imageGUI = new ImageGUI();
 		
