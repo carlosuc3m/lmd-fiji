@@ -136,6 +136,8 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	    }
 	};
 	
+	private static final String LMD_SUFFIX = "_LMD_ROIS";
+	
 	private Runnable closeSAMJCallback = () -> {
 		if (samj != null && samj.isLoaded())
 			samj.closeProcess();
@@ -341,25 +343,43 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	}
 
 	private Object exportLMDFormat(List<Mask> masks) {
-		int[] absPoint1 = firstCalibration.getAbsCalPoint();
-		int[] absPoint2 = secondCalibration.getAbsCalPoint();
-		int[] absPoint3 = thirdCalibration.getAbsCalPoint();
 		ImageDataXMLGenerator generator = new ImageDataXMLGenerator();
+		List<java.awt.Point> calPoints = new ArrayList<java.awt.Point>();
+		calPoints.add(firstCalibration.getAbsCalPoint());
+		calPoints.add(secondCalibration.getAbsCalPoint());
+		calPoints.add(thirdCalibration.getAbsCalPoint());
+		generator.setCalibrationPoints(calPoints);
 		for (Mask mm : masks) {
-			Polygon pol = imageGUI.toAbsCoord();
+			Polygon pol = imageGUI.toAbsCoord(mm.getContour());
 			generator.addRoi(pol);
 		}
 		String xmltext = generator.generateXML();
         // Write the XML string into the file
+		File fileToSave = new File(generatedCalibrationName());
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileToSave))) {
             writer.write(xmltext);
-            System.out.println("File saved successfully: " + fileToSave.getAbsolutePath());
+            IJ.showMessage("LMD Roi file successfully saved at:" + System.lineSeparator() + fileToSave.getAbsolutePath());;
         } catch (IOException e) {
             // Display an error dialog and print the stack trace for debugging
             JOptionPane.showMessageDialog(null, "Error saving file: " + e.getMessage(),
                                           "Save Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
+        return null;
+	}
+	
+	private String generatedCalibrationName() {
+		String str = imageGUI.imagePath.getText().trim();
+		String strNoSuffix = str;
+		if (str.lastIndexOf(".") != -1)
+			strNoSuffix = str.substring(0, str.lastIndexOf("."));
+		String fname = strNoSuffix + LMD_SUFFIX;
+		int i = 1;
+		while (new File(fname + ".xml").exists()) {
+			fname += "-" + i;
+			i ++;
+		}
+		return fname + ".xml";
 	}
 
 	@Override

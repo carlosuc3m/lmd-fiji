@@ -2,6 +2,7 @@ package org.proteovir.gui;
 
 import java.awt.Color;
 import java.awt.Frame;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.DataFlavor;
@@ -254,6 +255,14 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
         y = labelH + imH;
         metadataPath.setBounds(inset, y, pathW, metaH - inset);
         metaBtn.setBounds(inset + pathW + inset, y, btnW, metaH - inset);
+	}
+
+	public Point getAbsCalPoint() {
+		if (calibrationPoint == null || meta == null)
+			return new Point(0, 0);
+		int x = (int) (Math.round(meta.getTilePosX() / meta.getPixelSizeX()) + calibrationPoint[0]);
+		int y = (int) (Math.round(meta.getTilePosY() / meta.getPixelSizeY()) + calibrationPoint[1]);
+		return new Point(x, y);
 	}
 	
 	public boolean isCalibrated() {

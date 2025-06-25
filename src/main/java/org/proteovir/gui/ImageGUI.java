@@ -1,5 +1,6 @@
 package org.proteovir.gui;
 
+import java.awt.Polygon;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.io.File;
@@ -216,6 +217,20 @@ public class ImageGUI extends JPanel implements DocumentListener {
         y = labelH + imH;
         metadataPath.setBounds(inset, y, pathW, metaH - inset);
         metaBtn.setBounds(inset + pathW + inset, y, btnW, metaH - inset);
+	}
+
+	public Polygon toAbsCoord(Polygon pol) {
+		if (!imSet || meta == null)
+			return new Polygon(new int[0], new int[0], 0);
+		int offsetX = (int) Math.round(meta.getTilePosX() / meta.getPixelSizeX());
+		int offsetY = (int) Math.round(meta.getTilePosY() / meta.getPixelSizeY());
+		int[] x = pol.xpoints;
+		int[] y = pol.ypoints;
+		for (int i = 0; i < x.length; i ++) {
+			x[i] = x[i] + offsetX;
+			y[i] = y[i] + offsetY;
+		}
+		return new Polygon(x, y, x.length);
 	}
 	
 	public boolean isDefined() {
