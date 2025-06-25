@@ -1,5 +1,6 @@
 package org.proteovir.gui;
 
+import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -9,7 +10,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -18,8 +21,10 @@ import java.util.Stack;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import org.proteovir.metadata.ImageDataXMLGenerator;
 import org.proteovir.roimanager.RoiManagerConsumer;
 
 import ai.nets.samj.annotation.Mask;
@@ -163,6 +168,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		imageGUI.setChangeImageCallback(closeSAMJCallback);
 
 		roiManager.getList().addMouseListener(this);
+		roiManager.setExportLMDcallback((masks) -> exportLMDFormat(masks));
 		samjBtn.addActionListener(this);
 		activationBtn.addActionListener(this);
 		ImagePlus.addImageListener(this);
@@ -332,6 +338,28 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		}
 		this.undoStack.push(undoRois);
 		this.annotatedMask.push(polys);
+	}
+
+	private Object exportLMDFormat(List<Mask> masks) {
+		int[] absPoint1 = firstCalibration.getAbsCalPoint();
+		int[] absPoint2 = secondCalibration.getAbsCalPoint();
+		int[] absPoint3 = thirdCalibration.getAbsCalPoint();
+		ImageDataXMLGenerator generator = new ImageDataXMLGenerator();
+		for (Mask mm : masks) {
+			Polygon pol = imageGUI.toAbsCoord();
+			generator.addRoi(pol);
+		}
+		String xmltext = generator.generateXML();
+        // Write the XML string into the file
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileToSave))) {
+            writer.write(xmltext);
+            System.out.println("File saved successfully: " + fileToSave.getAbsolutePath());
+        } catch (IOException e) {
+            // Display an error dialog and print the stack trace for debugging
+            JOptionPane.showMessageDialog(null, "Error saving file: " + e.getMessage(),
+                                          "Save Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
 	}
 
 	@Override

@@ -13,6 +13,7 @@ import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import javax.swing.JButton;
 import javax.swing.event.ListSelectionEvent;
@@ -29,6 +30,8 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
     private Object image;
     
     private RoiManagerConsumer consumer;
+
+	private Consumer<List<Mask>> exportLMDCallback;
     
     private List<Mask> rois = new ArrayList<Mask>();
     
@@ -59,6 +62,15 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 	
 	public void setImage(Object image) {
 		consumer.setImage(image);
+		this.image = image;
+	}
+	
+	public void setExportLMDcallback(Consumer<List<Mask>> exportLMDCallback) {
+		this.exportLMDCallback = exportLMDCallback;
+	}
+	
+	public Object getCurrentImage() {
+		return this.image;
 	}
 	
 	/**
@@ -152,7 +164,7 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 	}
 
 	private void exportLMD() {
-		
+		exportLMDCallback.accept(rois);
 	}
 	
 	@Override
@@ -176,6 +188,8 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 			return;
 		} else if (command.equals("Complicate"))
 			complicate();
+		else if (command.equals("Export LMD"))
+			exportLMD();
 		
 		justClickedDelete = false;
 	}
