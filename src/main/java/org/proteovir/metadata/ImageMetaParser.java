@@ -8,21 +8,18 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 public class ImageMetaParser {
 
     // Parsed metadata fields
-    private double tilePosX;
-    private double tilePosY;
-    private double tileDimX;
-    private double tileDimY;
-    private double pixelSizeX;
-    private double pixelSizeY;
-    private int nbPixelsX;
-    private int nbPixelsY;
+    final private double tilePosX;
+    final private double tilePosY;
+    final private double tileDimX;
+    final private double tileDimY;
+    final private double pixelSizeX;
+    final private double pixelSizeY;
+    final private int nbPixelsX;
+    final private int nbPixelsY;
     private String filename;
 
     /**
@@ -62,9 +59,11 @@ public class ImageMetaParser {
         String voxelYStr = (String) xpath.evaluate(String.format(exprY, "Voxel"), doc, XPathConstants.STRING);
         String numXStr = (String) xpath.evaluate(String.format(exprX, "NumberOfElements"), doc, XPathConstants.STRING);
         String numYStr = (String) xpath.evaluate(String.format(exprY, "NumberOfElements"), doc, XPathConstants.STRING);
-        
-        String posX = "";//tile.getAttribute("PosX");
-        String posY = "";//tile.getAttribute("PosY");
+
+        // 3. XPath expressions for X and Y lengths<Attachment Name="TileScanInfo" Application="LAS AF" FlipX="0" FlipY="0" SwapXY="0">
+        String exprPosX = "/Data/Image/Attachment[@Name=\"TileScanInfo\"]/Tile/@%s";
+        String posX = (String) xpath.evaluate(String.format(exprPosX, "PosX"), doc, XPathConstants.STRING);
+        String posY = (String) xpath.evaluate(String.format(exprPosX, "PosY"), doc, XPathConstants.STRING);
         
 
         // Unit conversion factors
@@ -90,27 +89,11 @@ public class ImageMetaParser {
         this.pixelSizeY = parseCsn(voxelYStr) * dimFac;
         this.nbPixelsX = (int) parseCsn(numXStr);
         this.nbPixelsY = (int) parseCsn(numYStr);
-
-        System.out.println(this.filename + " " + this);
     }
 
     // Comma-separated number parser
     private static double parseCsn(String number) {
         return Double.parseDouble(number.replace(",", ""));
-    }
-
-    // Helper to find an Element by attribute in a NodeList
-    private static Element getElementByAttribute(NodeList nodes, String attrName, String attrValue) throws Exception {
-        for (int i = 0; i < nodes.getLength(); i++) {
-            Node node = nodes.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                Element elem = (Element) node;
-                if (attrValue.equals(elem.getAttribute(attrName))) {
-                    return elem;
-                }
-            }
-        }
-        throw new Exception("Element with " + attrName + "=\"" + attrValue + "\" not found");
     }
 
     // Getters for all metadata fields
