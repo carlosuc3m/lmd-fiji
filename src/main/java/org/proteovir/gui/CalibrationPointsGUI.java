@@ -19,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.TransferHandler;
 
 import org.proteovir.gui.components.PlaceholderTextField;
+import org.proteovir.metadata.ImageMetaParser;
 
 import ij.IJ;
 import ij.ImageListener;
@@ -36,6 +37,7 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener{
     private int[] calibrationPoint;
     
     private ImagePlus imp;
+    private ImageMetaParser meta;
     
     JLabel title;
     PlaceholderTextField imagePath;
@@ -270,12 +272,12 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener{
 			title.setText(String.format(IM_SET, "" + n));
 			imageBtn.setText(CHANGE_IM);
 			metaBtn.setText(ADD_META);
-		} else if (calibrationPoint == null && false) {
-			title.setText(String.format(ALL_SET, "" + n));
+		} else if (calibrationPoint == null && meta != null) {
+			title.setText(String.format(META_SET, "" + n));
 			imageBtn.setText(ADD_IM);
 			metaBtn.setText(CHANGE_META);
-		} else if (calibrationPoint != null && false) {
-			title.setText(String.format(META_SET, "" + n));
+		} else if (calibrationPoint != null && meta != null) {
+			title.setText(String.format(ALL_SET, "" + n));
 			imageBtn.setText(CHANGE_IM);
 			metaBtn.setText(CHANGE_META);
 		} else {
@@ -284,7 +286,20 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener{
 	}
 	
 	private void openMeta(File file) {
-		
+		meta = null;
+		if (!file.isFile() || !file.getAbsolutePath().endsWith(".xml")) {
+        	IJ.error("File did not correspond to a valid image.");
+        	metadataPath.setTempPlaceholder("Select a valid .xml file");
+        	setInfoState();
+            return;
+		}
+		try {
+			meta = new ImageMetaParser(file.getAbsolutePath(), "µm");
+		} catch (Exception e) {
+			e.printStackTrace();
+			IJ.error("Please select a valid properties.xml file.");
+			
+		}
 	}
 	
 	private void openImage(File file) {
