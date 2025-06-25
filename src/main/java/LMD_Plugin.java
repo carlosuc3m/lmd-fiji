@@ -21,7 +21,7 @@ public class LMD_Plugin implements PlugIn {
 	public void run(String arg) {
         SwingUtilities.invokeLater(new Runnable() {
         	public void run() {
-            	ij.plugin.frame.PlugInFrame frame = new ij.plugin.frame.PlugInFrame("Proteovir LMD Segmentator");
+            	ij.plugin.frame.PlugInFrame frame = new ij.plugin.frame.PlugInFrame("Proteovir LMD Annotator");
             	SidePanel gui = new SidePanel(null);
                 frame.add(gui);
                 frame.pack();
