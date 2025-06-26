@@ -130,6 +130,12 @@ public class SidePanelGUI extends JPanel {
 		thirdCalibration.setCallback(callback);
 		
 		imageGUI = new ImageGUI();
+		imageGUI.notifyRoiManager(() -> {
+			boolean allGood = firstCalibration.isCalibrated() 
+					&& secondCalibration.isCalibrated() 
+					&& thirdCalibration.isCalibrated();
+			roiManager.readyToExport(allGood && imageGUI.isDefined());
+		});
 		
 		samjBtn = new ColoredButton("SAMJ", new Color(150, 255, 150), Color.LIGHT_GRAY,
 				new Color(190, 255, 190), new Color(220, 220, 220));

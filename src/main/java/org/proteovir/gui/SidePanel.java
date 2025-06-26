@@ -420,6 +420,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		this.imageGUI.imagePath.setText("");
 		activationLabel.setText(OPEN_TARGET);
 		roiManager.block(true);
+		roiManager.readyToExport(false);
 		this.imp = null;
 		alreadyFocused = false;
 		imageGUI.setInfoState(false);

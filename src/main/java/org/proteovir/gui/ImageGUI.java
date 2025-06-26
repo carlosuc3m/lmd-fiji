@@ -35,6 +35,7 @@ public class ImageGUI extends JPanel implements DocumentListener {
 
     private Runnable changeImageCallback;
 	private Function<File, Boolean> openImageCallback;
+	private Runnable roiManagerCallback;
     
     JLabel title;
     PlaceholderTextField imagePath;
@@ -301,6 +302,7 @@ public class ImageGUI extends JPanel implements DocumentListener {
 		} else {
 			setDefault(modifyTextField);
 		}
+		this.roiManagerCallback.run();
 	}
 	
 	private synchronized void openMeta(String strFile) {
@@ -382,5 +384,9 @@ public class ImageGUI extends JPanel implements DocumentListener {
 	@Override
 	public void changedUpdate(DocumentEvent e) {
 		onChange(e);
+	}
+
+	public void notifyRoiManager(Runnable roiManagerCallback) {
+		this.roiManagerCallback = roiManagerCallback;
 	}
 }
