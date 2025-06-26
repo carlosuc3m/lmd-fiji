@@ -16,6 +16,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
 
 import org.proteovir.gui.components.PlaceholderTextField;
@@ -120,6 +121,10 @@ public class ImageGUI extends JPanel implements DocumentListener {
 	    	else
 		    	chooser = new JFileChooser();
 		    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		    FileNameExtensionFilter xmlFilter =
+		    	    new FileNameExtensionFilter("XML Files (*.xml)", "xml");
+	    	chooser.setFileFilter(xmlFilter);
+	    	chooser.setAcceptAllFileFilterUsed(false);
 
 		    int result = chooser.showOpenDialog(metaBtn.getParent());
 		    if (result == JFileChooser.APPROVE_OPTION) {
