@@ -19,6 +19,7 @@ import javax.swing.JButton;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.proteovir.roimanager.utils.PolygonOffset;
 
 import ai.nets.samj.annotation.Mask;
 
@@ -152,11 +153,17 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 	}
 	
 	private void dilate() {
-		
+		Mask mask = rois.get(list.getSelectedIndex());
+		Polygon newPol = PolygonOffset.dilate(mask.getContour(), 0.5);
+		mask.setContour(newPol);
+		consumer.setRois(rois, list.getSelectedIndex());
 	}
 	
 	private void erode() {
-		
+		Mask mask = rois.get(list.getSelectedIndex());
+		Polygon newPol = PolygonOffset.erode(mask.getContour(), 0.5);
+		mask.setContour(newPol);
+		consumer.setRois(rois, list.getSelectedIndex());
 	}
 	
 	private void exportMask() {
@@ -190,6 +197,10 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 			complicate();
 		else if (command.equals("Export LMD"))
 			exportLMD();
+		else if (command.equals("Dilate"))
+			dilate();
+		else if (command.equals("Erode"))
+			erode();
 		
 		justClickedDelete = false;
 	}

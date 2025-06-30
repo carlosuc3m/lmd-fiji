@@ -54,7 +54,7 @@ public class PolygonOffset {
      * @param distance Offset distance (>0 for dilation)
      * @return New polygon vertices after dilation
      */
-    public static Point2D.Double[] dilate(Polygon polygon, double distance) {
+    public static Polygon dilate(Polygon polygon, double distance) {
     	Point2D.Double[] pts = new Point2D.Double[polygon.npoints];
     	for (int i = 0; i < polygon.npoints; i ++) {
     		pts[i] = new Point2D.Double(polygon.xpoints[i], polygon.ypoints[i]);
@@ -72,7 +72,14 @@ public class PolygonOffset {
 
         double flatness = Math.max(0.1, Math.abs(distance) / 4);
         List<Point2D.Double> result = extractPoints(area, flatness);
-        return result.toArray(new Point2D.Double[0]);
+        
+        int[] x = new int[result.size()];
+        int[] y = new int[result.size()];
+        for (int i = 0; i < result.size(); i ++) {
+        	x[i] = (int) result.get(i).x;
+        	y[i] = (int) result.get(i).y;
+        }
+        return new Polygon(x, y, x.length);
     }
 
     /**
@@ -81,7 +88,7 @@ public class PolygonOffset {
      * @param distance Offset distance (>0 for erosion amount)
      * @return New polygon vertices after erosion
      */
-    public static Point2D.Double[] erode(Polygon polygon, double distance) {
+    public static Polygon erode(Polygon polygon, double distance) {
     	Point2D.Double[] pts = new Point2D.Double[polygon.npoints];
     	for (int i = 0; i < polygon.npoints; i ++) {
     		pts[i] = new Point2D.Double(polygon.xpoints[i], polygon.ypoints[i]);
@@ -98,6 +105,13 @@ public class PolygonOffset {
 
         double flatness = Math.max(0.1, Math.abs(distance) / 4);
         List<Point2D.Double> result = extractPoints(area, flatness);
-        return result.toArray(new Point2D.Double[0]);
+        
+        int[] x = new int[result.size()];
+        int[] y = new int[result.size()];
+        for (int i = 0; i < result.size(); i ++) {
+        	x[i] = (int) result.get(i).x;
+        	y[i] = (int) result.get(i).y;
+        }
+        return new Polygon(x, y, x.length);
     }
 }
