@@ -149,7 +149,7 @@ public class PolygonUtils {
      * @param pol2 Vertices of the second polygon
      * @return Vertices of the merged polygon
      */
-    public static Point2D.Double[] merge(Polygon pol1, Polygon pol2) {
+    public static Polygon merge(Polygon pol1, Polygon pol2) {
     	Point2D.Double[] pts1 = new Point2D.Double[pol1.npoints];
     	for (int i = 0; i < pol1.npoints; i ++) {
     		pts1[i] = new Point2D.Double(pol1.xpoints[i], pol1.ypoints[i]);
@@ -167,7 +167,14 @@ public class PolygonUtils {
 
         // Flatten and extract outline points
         double flatness = 0.1;
-        List<Point2D.Double> mergedPts = extractPoints(area1, flatness);
-        return mergedPts.toArray(new Point2D.Double[0]);
+        List<Point2D.Double> result = extractPoints(area1, flatness);
+
+        int[] x = new int[result.size()];
+        int[] y = new int[result.size()];
+        for (int i = 0; i < result.size(); i ++) {
+        	x[i] = (int) result.get(i).x;
+        	y[i] = (int) result.get(i).y;
+        }
+        return new Polygon(x, y, x.length);
     }
 }

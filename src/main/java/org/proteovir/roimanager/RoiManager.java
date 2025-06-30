@@ -159,7 +159,21 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 	}
 	
 	private void merge() {
-		
+		if (list.getSelectedIndex() == -1 || list.getSelectedIndices().length <= 1)
+			return;
+		List<Mask> toMerge = new ArrayList<Mask>();
+		for (int i : list.getSelectedIndices()) {
+			toMerge.add(rois.get(i));
+		}
+		for (int i = toMerge.size() - 1; i >= 0; i --) {
+			for (int j = i - 1; j >= 0; j --) {
+				if (!PolygonUtils.overlaps(toMerge.get(i).getContour(), toMerge.get(j).getContour()))
+					continue;
+				Mask roi = toMerge.get(j);
+				roi.setContour(PolygonUtils.merge(roi.getContour(), toMerge.get(i).getContour()));
+				break;
+			}
+		}
 	}
 	
 	private void dilate() {
@@ -221,6 +235,8 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 			dilate();
 		else if (command.equals("Erode"))
 			erode();
+		else if (command.equals("Merge"))
+			merge();
 		
 		justClickedDelete = false;
 	}
