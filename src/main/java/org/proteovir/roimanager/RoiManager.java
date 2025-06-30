@@ -136,16 +136,26 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 	}
 	
 	private void simplify() {
-		Mask mask = rois.get(list.getSelectedIndex());
-		mask.simplify();
-		consumer.setSelected(mask);
-		consumer.setRois(rois, list.getSelectedIndex());
+		if (list.getSelectedIndex() == -1)
+			return;
+		int[] indices = list.getSelectedIndices();
+		for (int ind : indices) {
+			Mask mask = rois.get(ind);
+			mask.simplify();
+			consumer.setSelected(mask);
+			consumer.setRois(rois, ind);
+		}
 	}
 	
 	private void complicate() {
-		Mask mask = rois.get(list.getSelectedIndex());
-		mask.complicate();
-		consumer.setRois(rois, list.getSelectedIndex());
+		if (list.getSelectedIndex() == -1)
+			return;
+		int[] indices = list.getSelectedIndices();
+		for (int ind : indices) {
+			Mask mask = rois.get(ind);
+			mask.complicate();
+			consumer.setRois(rois, ind);
+		}
 	}
 	
 	private void merge() {
@@ -153,17 +163,27 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 	}
 	
 	private void dilate() {
-		Mask mask = rois.get(list.getSelectedIndex());
-		Polygon newPol = PolygonOffset.dilate(mask.getContour(), 0.5);
-		mask.setContour(newPol);
-		consumer.setRois(rois, list.getSelectedIndex());
+		if (list.getSelectedIndex() == -1)
+			return;
+		int[] indices = list.getSelectedIndices();
+		for (int ind : indices) {
+			Mask mask = rois.get(ind);
+			Polygon newPol = PolygonOffset.dilate(mask.getContour(), 0.5);
+			mask.setContour(newPol);
+			consumer.setRois(rois, ind);
+		}
 	}
 	
 	private void erode() {
-		Mask mask = rois.get(list.getSelectedIndex());
-		Polygon newPol = PolygonOffset.erode(mask.getContour(), 0.5);
-		mask.setContour(newPol);
-		consumer.setRois(rois, list.getSelectedIndex());
+		if (list.getSelectedIndex() == -1)
+			return;
+		int[] indices = list.getSelectedIndices();
+		for (int ind : indices) {
+			Mask mask = rois.get(ind);
+			Polygon newPol = PolygonOffset.erode(mask.getContour(), 0.5);
+			mask.setContour(newPol);
+			consumer.setRois(rois, ind);
+		}
 	}
 	
 	private void exportMask() {
@@ -242,8 +262,11 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
-		// TODO Auto-generated method stub
-		
+		for (JButton btn : this.btns) {
+			if (btn.getText().equals("Dilate") || btn.getText().equals("Erode") || btn.getText().equals("Simplify")
+					|| btn.getText().equals("Complicate"))
+				btn.setEnabled(list.getSelectedIndex()  != -1 && rois.size() > 0);
+		}
 	}
 
 	@Override
