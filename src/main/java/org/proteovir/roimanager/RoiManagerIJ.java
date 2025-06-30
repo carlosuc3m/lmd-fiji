@@ -111,8 +111,18 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener {
 			imp.deleteRoi();
 			return;
 		}
-		PolygonRoi roi = new PolygonRoi(mm.getContour(), PolygonRoi.POLYGON);
-		imp.setRoi(roi, true);
+		Roi setRoi = null;
+		for (Roi roi : this.roiList) {
+			if (roi.getName().equals(mm.getName())) {
+				setRoi = roi;
+				break;
+			}
+		}
+		if (setRoi == null) {
+			setRoi = new PolygonRoi(mm.getContour(), PolygonRoi.POLYGON);
+			setRoi.setName(mm.getName());
+		}
+		imp.setRoi(setRoi, true);
 	}
 
 	private Overlay newOverlay() {
