@@ -107,6 +107,10 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener {
 
 	@Override
 	public void setSelected(Mask mm) {
+		if (mm == null) {
+			imp.deleteRoi();
+			return;
+		}
 		PolygonRoi roi = new PolygonRoi(mm.getContour(), PolygonRoi.POLYGON);
 		imp.setRoi(roi, true);
 	}

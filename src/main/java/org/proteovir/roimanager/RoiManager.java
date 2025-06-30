@@ -164,7 +164,7 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 		for (int i = list.getSelectedIndices().length - 1; i >= 0; i --) {
 			int ii = list.getSelectedIndices()[i];
 			for (int j = i - 1; j >= 0; j --) {
-				int jj = list.getSelectedIndices()[i];
+				int jj = list.getSelectedIndices()[j];
 				if (!PolygonUtils.overlaps(rois.get(ii).getContour(), rois.get(jj).getContour()))
 					continue;
 				Mask roi = rois.get(jj);
