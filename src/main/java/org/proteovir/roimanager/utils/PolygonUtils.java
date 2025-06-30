@@ -13,7 +13,7 @@ import java.util.List;
  * Utility class for dilating (expanding) or eroding (contracting) a polygon
  * represented as an array of Point2D.Double without external dependencies.
  */
-public class PolygonOffset {
+public class PolygonUtils {
     /**
      * Builds a closed Path2D from the given points.
      */
@@ -113,5 +113,61 @@ public class PolygonOffset {
         	y[i] = (int) result.get(i).y;
         }
         return new Polygon(x, y, x.length);
+    }
+
+    /**
+     * Checks whether two polygons overlap (i.e., have any intersecting area).
+     * @param pol1 Vertices of the first polygon
+     * @param pol2 Vertices of the second polygon
+     * @return true if the intersection area is non-empty
+     */
+    public static boolean overlaps(Polygon pol1, Polygon pol2) {
+    	Point2D.Double[] pts1 = new Point2D.Double[pol1.npoints];
+    	for (int i = 0; i < pol1.npoints; i ++) {
+    		pts1[i] = new Point2D.Double(pol1.xpoints[i], pol1.ypoints[i]);
+    	}
+    	Point2D.Double[] pts2 = new Point2D.Double[pol2.npoints];
+    	for (int i = 0; i < pol2.npoints; i ++) {
+    		pts2[i] = new Point2D.Double(pol2.xpoints[i], pol2.ypoints[i]);
+    	}
+        // Build Path2D for each polygon
+        Path2D.Double path1 = buildPath(pts1);
+        Path2D.Double path2 = buildPath(pts2);
+
+        // Create Area objects and intersect them
+        Area area1 = new Area(path1);
+        Area area2 = new Area(path2);
+        area1.intersect(area2);
+
+        // If the resulting area is not empty, they overlap
+        return !area1.isEmpty();
+    }
+
+    /**
+     * Merges two overlapping polygons into a single combined region.
+     * @param pol1 Vertices of the first polygon
+     * @param pol2 Vertices of the second polygon
+     * @return Vertices of the merged polygon
+     */
+    public static Point2D.Double[] merge(Polygon pol1, Polygon pol2) {
+    	Point2D.Double[] pts1 = new Point2D.Double[pol1.npoints];
+    	for (int i = 0; i < pol1.npoints; i ++) {
+    		pts1[i] = new Point2D.Double(pol1.xpoints[i], pol1.ypoints[i]);
+    	}
+    	Point2D.Double[] pts2 = new Point2D.Double[pol2.npoints];
+    	for (int i = 0; i < pol2.npoints; i ++) {
+    		pts2[i] = new Point2D.Double(pol2.xpoints[i], pol2.ypoints[i]);
+    	}
+        // Build areas for both polygons
+        Area area1 = new Area(buildPath(pts1));
+        Area area2 = new Area(buildPath(pts2));
+
+        // Union the shapes
+        area1.add(area2);
+
+        // Flatten and extract outline points
+        double flatness = 0.1;
+        List<Point2D.Double> mergedPts = extractPoints(area1, flatness);
+        return mergedPts.toArray(new Point2D.Double[0]);
     }
 }

@@ -19,7 +19,7 @@ import javax.swing.JButton;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.proteovir.roimanager.utils.PolygonOffset;
+import org.proteovir.roimanager.utils.PolygonUtils;
 
 import ai.nets.samj.annotation.Mask;
 
@@ -168,7 +168,7 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 		int[] indices = list.getSelectedIndices();
 		for (int ind : indices) {
 			Mask mask = rois.get(ind);
-			Polygon newPol = PolygonOffset.dilate(mask.getContour(), 0.5);
+			Polygon newPol = PolygonUtils.dilate(mask.getContour(), 0.5);
 			mask.setContour(newPol);
 			consumer.setRois(rois, ind);
 		}
@@ -180,7 +180,7 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 		int[] indices = list.getSelectedIndices();
 		for (int ind : indices) {
 			Mask mask = rois.get(ind);
-			Polygon newPol = PolygonOffset.erode(mask.getContour(), 0.5);
+			Polygon newPol = PolygonUtils.erode(mask.getContour(), 0.5);
 			mask.setContour(newPol);
 			consumer.setRois(rois, ind);
 		}
@@ -266,6 +266,9 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 			if (btn.getText().equals("Dilate") || btn.getText().equals("Erode") || btn.getText().equals("Simplify")
 					|| btn.getText().equals("Complicate"))
 				btn.setEnabled(list.getSelectedIndex()  != -1 && rois.size() > 0);
+			else if (btn.getText().equals("Merge"))
+				btn.setEnabled(list.getSelectedIndex()  != -1 && list.getSelectedIndices().length > 1);
+			
 		}
 	}
 
