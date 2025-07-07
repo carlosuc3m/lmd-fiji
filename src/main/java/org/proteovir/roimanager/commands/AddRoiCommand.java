@@ -1,6 +1,5 @@
 package org.proteovir.roimanager.commands;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -8,13 +7,10 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.proteovir.roimanager.RoiManager;
 
 import ai.nets.samj.annotation.Mask;
-import ai.nets.samj.ij.utils.RoiManagerPrivateViolator;
 
 public class AddRoiCommand implements Command {
 	private RoiManager roiManager;
 	private final List<Mask> polys;
-	private List<PolygonRoi> rois;
-	private boolean isAddingToRoiManager = true;
 	private String shape = "";
 	private int promptCount = ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
 	private String modelName = "";
@@ -36,24 +32,14 @@ public class AddRoiCommand implements Command {
 		this.modelName = modelName;
 	}
 	
-	public void setAddingToRoiManager(boolean addToRoiManager) {
-		this.isAddingToRoiManager = addToRoiManager;
-	}
-	
-	public List<PolygonRoi> getImageJRois(){
-		return rois;
-	}
-	
 	public List<Mask> getMasks(){
 		return polys;
 	}
   
 	@Override
 	public void execute() {
-		rois = new ArrayList<PolygonRoi>();
 		int resNo = 1;
 		for (Mask m : polys) {
-			final PolygonRoi pRoi = new PolygonRoi(m.getContour(), PolygonRoi.POLYGON);
 			String name = promptCount + "." + (resNo ++) + "_"+shape + "_" + modelName;
 			if (shape.equals("") && modelName.equals(""))
 				name = "" + promptCount;
@@ -62,24 +48,21 @@ public class AddRoiCommand implements Command {
 			else if (shape.equals(""))
 				name = promptCount + "." + (resNo) + "_"+modelName;
 				
-			pRoi.setName(name);
 			m.setName(name);
-			rois.add(pRoi);
-			if (isAddingToRoiManager) roiManager.addRoi(pRoi);;
 		}
 	}
   
 	@Override
 	public void undo() {
 		try {
-			for (PolygonRoi rr2 : rois) {
-		    	for (int n = this.roiManager.getCount() - 1; n >= 0; n --) {
-		    		PolygonRoi rr = (PolygonRoi) roiManager.getRoi(n);
-	    			if (!Arrays.equals(rr.getXCoordinates(), rr2.getXCoordinates()))
+			for (Mask rr2 : polys) {
+		    	for (int n = this.roiManager.getROIsNumber() - 1; n >= 0; n --) {
+		    		Mask rr = roiManager.getRoisAsArray()[n];
+	    			if (!Arrays.equals(rr.getContour().xpoints, rr2.getContour().ypoints))
 	    				continue;
-	    			if (!Arrays.equals(rr.getYCoordinates(), rr2.getYCoordinates()))
+	    			if (!Arrays.equals(rr.getContour().xpoints, rr2.getContour().ypoints))
 	    				continue;
-		    		RoiManagerPrivateViolator.deleteRoiAtPosition(this.roiManager, n);
+	    			roiManager.delete(n);
 		    		break;		    		
 		    	}
 				
