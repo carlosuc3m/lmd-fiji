@@ -331,6 +331,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 			masks.add(m);
 		}
 		Command command = new AddRoiCommand(roiManager, masks);
+		command.execute();
 		this.annotatedMask.push(command);
 	}
 
@@ -437,7 +438,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
         	redoAnnotatedMask.push(undo);
         } else if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Y && this.redoAnnotatedMask.size() != 0 && !undoPressed) {
         	undoPressed = true;
-        	Command redo = redoAnnotatedMask.peek();
+        	Command redo = redoAnnotatedMask.pop();
         	redo.execute();
         	annotatedMask.push(redo);
         }

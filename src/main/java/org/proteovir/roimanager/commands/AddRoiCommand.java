@@ -32,9 +32,9 @@ public class AddRoiCommand implements Command {
 		for (Mask rr2 : polys) {
 	    	for (int n = this.roiManager.getROIsNumber() - 1; n >= 0; n --) {
 	    		Mask rr = roiManager.getRoisAsArray()[n];
-    			if (!Arrays.equals(rr.getContour().xpoints, rr2.getContour().ypoints))
+    			if (!Arrays.equals(rr.getContour().xpoints, rr2.getContour().xpoints))
     				continue;
-    			if (!Arrays.equals(rr.getContour().xpoints, rr2.getContour().ypoints))
+    			if (!Arrays.equals(rr.getContour().ypoints, rr2.getContour().ypoints))
     				continue;
     			roiManager.delete(n);
 	    		break;		    		

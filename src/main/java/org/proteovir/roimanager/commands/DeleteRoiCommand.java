@@ -22,7 +22,7 @@ public class DeleteRoiCommand implements Command {
 	    		Mask rr = roiManager.getRoisAsArray()[n];
     			if (!Arrays.equals(rr.getContour().xpoints, rr2.getContour().xpoints))
     				continue;
-    			if (!Arrays.equals(rr.getContour().xpoints, rr2.getContour().ypoints))
+    			if (!Arrays.equals(rr.getContour().ypoints, rr2.getContour().ypoints))
     				continue;
 	    		roiManager.delete(n);
 	    		break;		    		
