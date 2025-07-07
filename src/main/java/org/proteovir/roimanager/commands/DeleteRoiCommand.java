@@ -17,28 +17,25 @@ public class DeleteRoiCommand implements Command {
 	}
 	
 	public void execute() {
-		try {
-			for (Mask rr2 : polys) {
-		    	for (int n = this.roiManager.getROIsNumber() - 1; n >= 0; n --) {
-		    		Mask rr = roiManager.getRoisAsArray()[n];
-	    			if (!Arrays.equals(rr.getContour().xpoints, rr2.getContour().xpoints))
-	    				continue;
-	    			if (!Arrays.equals(rr.getContour().xpoints, rr2.getContour().ypoints))
-	    				continue;
-		    		roiManager.delete(n);
-		    		break;		    		
-		    	}
-				
-			}
-		} catch (Exception ex) {
-    		ex.printStackTrace();
-    	}
+		for (Mask rr2 : polys) {
+	    	for (int n = this.roiManager.getROIsNumber() - 1; n >= 0; n --) {
+	    		Mask rr = roiManager.getRoisAsArray()[n];
+    			if (!Arrays.equals(rr.getContour().xpoints, rr2.getContour().xpoints))
+    				continue;
+    			if (!Arrays.equals(rr.getContour().xpoints, rr2.getContour().ypoints))
+    				continue;
+	    		roiManager.delete(n);
+	    		break;		    		
+	    	}
+		}
+		roiManager.updateShowAll();
 	}
 	
 	public void undo() {
 		for (Mask m : polys) {
 			roiManager.addRoi(m);;
 		}
+		roiManager.updateShowAll();
 	}
 	
 	@Override
