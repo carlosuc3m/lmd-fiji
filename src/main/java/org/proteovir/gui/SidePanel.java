@@ -26,6 +26,8 @@ import javax.swing.SwingUtilities;
 
 import org.proteovir.metadata.ImageDataXMLGenerator;
 import org.proteovir.roimanager.RoiManagerConsumer;
+import org.proteovir.roimanager.commands.AddRoiCommand;
+import org.proteovir.roimanager.commands.Command;
 
 import ai.nets.samj.annotation.Mask;
 import ai.nets.samj.communication.model.SAM2Tiny;
@@ -75,22 +77,14 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	 * All the points being collected that reference the background (ctrl + alt)
 	 */
 	private List<Localizable> collecteNegPoints = new ArrayList<Localizable>();
-	/**
-	 * Save lists of rois that have been added at the same time to delete them if necessary
-	 */
-   private Stack<List<Mask>> undoStack = new Stack<>();
-   /**
-    * Save lists of polygons deleted at the same time to undo their deleting
-    */
-   private Stack<List<Mask>> redoStack = new Stack<>();
    /**
     * List of the annotated masks on an image
     */
-   private Stack<List<Mask>> annotatedMask = new Stack<List<Mask>>();
+   private Stack<Command> annotatedMask = new Stack<Command>();
    /**
     * List that keeps track of the annotated masks
     */
-   private Stack<List<Mask>> redoAnnotatedMask = new Stack<List<Mask>>();
+   private Stack<Command> redoAnnotatedMask = new Stack<Command>();
    /**
     * Tracks if Ctrl+Z has already been handled
     */
@@ -325,21 +319,19 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	}
 	
 	void addToRoiManager(final List<Mask> polys, final String promptShape) {
-		if (this.roiManager.getROIsNumber() == 0 && undoStack.size() != 0)
+		if (this.roiManager.getROIsNumber() == 0 && annotatedMask.size() != 0)
 			annotatedMask.clear();
 			
-		this.redoStack.clear();
 		this.redoAnnotatedMask.clear();
 		promptsCreatedCnt++;
 		int resNo = 1;
-		List<Mask> undoRois = new ArrayList<Mask>();
+		List<Mask> masks = new ArrayList<Mask>();
 		for (Mask m : polys) {
 			m.setName(promptsCreatedCnt + "." + (resNo ++) + "_"+promptShape + "_" + this.samj.getName());
-			this.roiManager.addRoi(m);
-			undoRois.add(m);
+			masks.add(m);
 		}
-		this.undoStack.push(undoRois);
-		this.annotatedMask.push(polys);
+		Command command = new AddRoiCommand(roiManager, masks);
+		this.annotatedMask.push(command);
 	}
 
 	private Object exportLMDFormat(List<Mask> masks) {
@@ -438,25 +430,16 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-        if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Z && this.undoStack.size() != 0 && !redoPressed) {
+        if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Z && this.annotatedMask.size() != 0 && !redoPressed) {
         	redoPressed = true;
-        	try {
-	        	List<Mask> redoList = undoStack.peek();
-	        	for (int n = this.roiManager.getROIsNumber() - 1; n >= 0; n --) roiManager.delete(n);
-	        	undoStack.pop();
-	        	redoStack.push(redoList);
-	        	this.redoAnnotatedMask.push(this.annotatedMask.peek());
-	        	this.annotatedMask.pop();
-        	} catch (Exception ex) {
-        	}
-        } else if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Y && this.redoStack.size() != 0 && !undoPressed) {
+        	Command undo = annotatedMask.pop();
+        	undo.undo();
+        	redoAnnotatedMask.push(undo);
+        } else if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Y && this.redoAnnotatedMask.size() != 0 && !undoPressed) {
         	undoPressed = true;
-        	List<Mask> redoList = redoStack.peek();
-        	for (Mask pol : redoList) roiManager.addRoi(pol);
-        	redoStack.pop();
-        	undoStack.push(redoList);
-        	this.annotatedMask.push(this.redoAnnotatedMask.peek());
-        	this.redoAnnotatedMask.pop();
+        	Command redo = redoAnnotatedMask.peek();
+        	redo.execute();
+        	annotatedMask.push(redo);
         }
         e.consume();
 	}
