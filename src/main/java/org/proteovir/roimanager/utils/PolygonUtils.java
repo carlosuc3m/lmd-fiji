@@ -11,6 +11,8 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.proteovir.roimanager.utils.StraightSkeletonOffset.Point;
+
 /**
  * Utility class for dilating (expanding) or eroding (contracting) a polygon
  * represented as an array of Point2D.Double without external dependencies.
@@ -34,9 +36,14 @@ public class PolygonUtils {
 
     /**
      * Extracts the outline points from a shape by flattening curves to line segments.
+     * 
+     * @param area
+     * 	the area from what we will extract the polygon
+     * @param flatness
+     * 	how similar to the area the polygon should be
+     * @return
      */
     private static Polygon extractPoints(Area area, double flatness) {
-        // 1) Decompose into individual rings
         List<Polygon> rings = new ArrayList<>();
         PathIterator pit = new FlatteningPathIterator(area.getPathIterator(null), flatness);
         double[] coords = new double[6];
@@ -47,7 +54,6 @@ public class PolygonUtils {
             int type = pit.currentSegment(coords);
             switch (type) {
               case PathIterator.SEG_MOVETO:
-                // start a brand new ring
                 current = new Polygon();
                 rings.add(current);
                 current.addPoint(
@@ -113,22 +119,34 @@ public class PolygonUtils {
      */
     public static Polygon dilate(Polygon polygon, double distance) {
     	Point2D.Double[] pts = new Point2D.Double[polygon.npoints];
+    	List<Point> pols = new ArrayList<Point>();
     	for (int i = 0; i < polygon.npoints; i ++) {
     		pts[i] = new Point2D.Double(polygon.xpoints[i], polygon.ypoints[i]);
+    		pols.add(new Point(polygon.xpoints[i], polygon.ypoints[i]));
     	}
+    	List<List<Point>> possiblePols2 = StraightSkeletonOffset.computeOffset(pols, 1d);
+    	Polygon out2 = new Polygon();
+    	for (Point pp : possiblePols2.get(0)) {
+    		out2.addPoint((int) pp.x, (int) pp.y);
+    	}
+    	List<List<Point>> possiblePols = StraightSkeletonOffset.computeOffset(pols, -1d);
+    	Polygon out = new Polygon();
+    	for (Point pp : possiblePols.get(0)) {
+    		out.addPoint((int) pp.x, (int) pp.y);
+    	}
+    	if (true)
+    		return merge(out, out2);
         Path2D.Double path = buildPath(pts);
         // Stroke width = 2 * distance (centered stroke)
         BasicStroke stroke = new BasicStroke(
-            (float)(2 * distance),
-            BasicStroke.CAP_ROUND,
-            BasicStroke.JOIN_ROUND
-        );
-        Shape outline = stroke.createStrokedShape(path);
-        Area area = new Area(path);
-        area.add(new Area(outline));
+                (float)(2 * distance),
+                BasicStroke.CAP_ROUND,
+                BasicStroke.JOIN_ROUND
+            );
+            Shape ring = stroke.createStrokedShape(path);
 
-        double flatness = Math.max(0.1, Math.abs(distance) / 4);
-        return extractPoints(area, flatness);
+            // 3) extract the OUTER ring only (this is the Minkowski-sum boundary)
+            return extractPoints(new Area(ring), 0.1);
     }
 
     /**
