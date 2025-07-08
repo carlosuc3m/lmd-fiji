@@ -1,8 +1,10 @@
 package org.proteovir.roimanager.utils;
+
 import java.awt.BasicStroke;
 import java.awt.Polygon;
 import java.awt.Shape;
 import java.awt.geom.Area;
+import java.awt.geom.FlatteningPathIterator;
 import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
@@ -33,20 +35,75 @@ public class PolygonUtils {
     /**
      * Extracts the outline points from a shape by flattening curves to line segments.
      */
-    private static List<Point2D.Double> extractPoints(Shape shape, double flatness) {
-        List<Point2D.Double> pts = new ArrayList<>();
-        PathIterator it = shape.getPathIterator(null, flatness);
+    private static Polygon extractPoints(Area area, double flatness) {
+        // 1) Decompose into individual rings
+        List<Polygon> rings = new ArrayList<>();
+        PathIterator pit = new FlatteningPathIterator(area.getPathIterator(null), flatness);
         double[] coords = new double[6];
-        while (!it.isDone()) {
-            int type = it.currentSegment(coords);
-            if (type == PathIterator.SEG_MOVETO || type == PathIterator.SEG_LINETO) {
-                pts.add(new Point2D.Double(coords[0], coords[1]));
+        Polygon current = null;
+        boolean inRing = false;
+
+        while (!pit.isDone()) {
+            int type = pit.currentSegment(coords);
+            switch (type) {
+              case PathIterator.SEG_MOVETO:
+                // start a brand new ring
+                current = new Polygon();
+                rings.add(current);
+                current.addPoint(
+                  (int)Math.round(coords[0]),
+                  (int)Math.round(coords[1])
+                );
+                inRing = true;
+                break;
+
+              case PathIterator.SEG_LINETO:
+                if (inRing) {
+                    current.addPoint(
+                      (int)Math.round(coords[0]),
+                      (int)Math.round(coords[1])
+                    );
+                }
+                break;
+
+              case PathIterator.SEG_CLOSE:
+                if (inRing) {
+                    // close the ring by repeating first point
+                    current.addPoint(
+                      current.xpoints[0],
+                      current.ypoints[0]
+                    );
+                    inRing = false;
+                }
+                break;
             }
-            // SEG_CLOSE can be ignored because the first point == last point
-            it.next();
+            pit.next();
         }
-        return pts;
+
+        // 2) Pick the ring with the largest absolute area
+        Polygon outer = null;
+        double maxArea = -1;
+        for (Polygon ring : rings) {
+            double a = Math.abs(signedArea(ring));
+            if (a > maxArea) {
+                maxArea = a;
+                outer = ring;
+            }
+        }
+
+        return outer;
     }
+
+    /** Shoelace formula: positive or negative depending on winding */
+    private static double signedArea(Polygon p) {
+        double sum = 0;
+        int n = p.npoints;
+        for (int i = 0, j = n - 1; i < n; j = i++) {
+            sum += (p.xpoints[j] * p.ypoints[i] - p.xpoints[i] * p.ypoints[j]);
+        }
+        return sum / 2.0;
+    }
+
 
     /**
      * Returns a new polygon offset outward by the given distance (dilation).
@@ -71,15 +128,7 @@ public class PolygonUtils {
         area.add(new Area(outline));
 
         double flatness = Math.max(0.1, Math.abs(distance) / 4);
-        List<Point2D.Double> result = extractPoints(area, flatness);
-        
-        int[] x = new int[result.size()];
-        int[] y = new int[result.size()];
-        for (int i = 0; i < result.size(); i ++) {
-        	x[i] = (int) result.get(i).x;
-        	y[i] = (int) result.get(i).y;
-        }
-        return new Polygon(x, y, x.length);
+        return extractPoints(area, flatness);
     }
 
     /**
@@ -104,15 +153,7 @@ public class PolygonUtils {
         area.subtract(new Area(outline));
 
         double flatness = Math.max(0.1, Math.abs(distance) / 4);
-        List<Point2D.Double> result = extractPoints(area, flatness);
-        
-        int[] x = new int[result.size()];
-        int[] y = new int[result.size()];
-        for (int i = 0; i < result.size(); i ++) {
-        	x[i] = (int) result.get(i).x;
-        	y[i] = (int) result.get(i).y;
-        }
-        return new Polygon(x, y, x.length);
+        return extractPoints(area, flatness);
     }
 
     /**
@@ -167,14 +208,6 @@ public class PolygonUtils {
 
         // Flatten and extract outline points
         double flatness = 0.1;
-        List<Point2D.Double> result = extractPoints(area1, flatness);
-
-        int[] x = new int[result.size()];
-        int[] y = new int[result.size()];
-        for (int i = 0; i < result.size(); i ++) {
-        	x[i] = (int) result.get(i).x;
-        	y[i] = (int) result.get(i).y;
-        }
-        return new Polygon(x, y, x.length);
+        return extractPoints(area1, flatness);
     }
 }
