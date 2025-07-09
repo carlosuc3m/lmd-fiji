@@ -35,6 +35,12 @@ public class StraightSkeletonOffset {
         // 1) Build initial wavefront edges
         List<WaveEdge> wave = new ArrayList<>();
         int n = polygon.size();
+        for (int i = n - 1; i >= 0; i --) {
+        	if (polygon.get(i).x == polygon.get((i+1)%polygon.size()).x 
+        			&& polygon.get(i).y == polygon.get((i+1)%polygon.size()).y)
+        		polygon.remove(i);
+        }
+        n = polygon.size();
         for (int i = 0; i < n; i++) {
             WaveEdge e = new WaveEdge(polygon.get(i), polygon.get((i+1)%n));
             wave.add(e);
@@ -191,11 +197,23 @@ public class StraightSkeletonOffset {
                 seen.add(e);
                 Line L1 = e.getOffsetLine(r);
                 Line L2 = e.next.getOffsetLine(r);
-                contour.add(intersection(L1, L2));
+                if (L1.a / L1.b == L2.a / L2.b) {
+                	Point startPoint = e.a;
+                	e = e.next;
+                	e.a = startPoint;
+                	continue;
+                }
+                	
+                Point inter = intersection(L1, L2);
+                contour.add(inter);
                 e = e.next;
             } while (e!=null && e!=e0);
             if (!contour.isEmpty()) contours.add(contour);
         }
+        boolean hasBad = contours.get(0).stream()
+        	    .anyMatch(p -> !Double.isFinite(p.x) || !Double.isFinite(p.y));
+        if (hasBad)
+        	System.out.println();
         return contours;
     }
 
