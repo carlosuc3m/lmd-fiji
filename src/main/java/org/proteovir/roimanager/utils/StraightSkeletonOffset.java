@@ -195,6 +195,8 @@ public class StraightSkeletonOffset {
             WaveEdge e = e0;
             do {
                 seen.add(e);
+                if (e.b.x == 706 && e.b.y == 628)
+                	System.out.print(false);
                 Line L1 = e.getOffsetLine(r);
                 Line L2 = e.next.getOffsetLine(r);
                 if (L1.a / L1.b == L2.a / L2.b) {
@@ -267,7 +269,7 @@ public class StraightSkeletonOffset {
 
     static Point intersection(Line L, Line M){
     	double det=L.a*M.b-M.a*L.b;
-        return new Point((M.b*(-L.c)-L.b*(-M.c))/det,(L.a*(-M.c)-M.a*(-L.c))/det);
+        return new Point(Math.round((M.b*(-L.c)-L.b*(-M.c))/det),Math.round((L.a*(-M.c)-M.a*(-L.c))/det));
     }
 
     static double cross(Point u, Point v){ return u.x*v.y-u.y*v.x; }
