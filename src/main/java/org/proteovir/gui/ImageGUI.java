@@ -237,6 +237,7 @@ public class ImageGUI extends JPanel implements DocumentListener {
 	}
 	
 	private void searchMeta(String imgFile) {
+		meta = null;
 		File metaFolder = new File(new File(imgFile).getParent() + File.separator + META_FOLDER);
 		if (!metaFolder.isDirectory()
 				|| metaFolder.listFiles() == null
@@ -259,16 +260,13 @@ public class ImageGUI extends JPanel implements DocumentListener {
 		File file = new File(strFile);
 		if (!file.isFile() || !file.getAbsolutePath().endsWith(".xml")) {
         	IJ.error("File did not correspond to a valid image.");
-        	setInfoState();
             return;
 		}
 		try {
 			meta = new ImageMetaParser(file.getAbsolutePath(), "µm");
-        	setInfoState();
 		} catch (Exception e) {
 			e.printStackTrace();
-			IJ.error("Please select a valid properties.xml file.");
-        	setInfoState();
+			IJ.error("Unable to read metadata of selected image.");
 			
 		}
 	}
