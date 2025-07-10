@@ -247,12 +247,17 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
 	
 	private void searchMeta(String imgFile) {
 		File metaFolder = new File(new File(imgFile).getParent() + File.separator + META_FOLDER);
+		if (!metaFolder.isDirectory()
+				|| metaFolder.listFiles() == null
+				|| metaFolder.listFiles().length == 0) {
+        	IJ.error("Unable to find corresponding metadata");
+			return;
+		}
 		File metaFile = Arrays.stream(metaFolder.listFiles())
 				.filter(ff -> ff.getName().endsWith(META_SUFFIX))
 				.findFirst().orElse(null);
 		if (metaFile == null) {
         	IJ.error("Unable to find corresponding metadata");
-        	setInfoState();
 			return;
 		}
 		openMeta(metaFile.getAbsolutePath());
@@ -263,16 +268,13 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
 		File file = new File(strFile);
 		if (!file.isFile() || !file.getAbsolutePath().endsWith(".xml")) {
         	IJ.error("File did not correspond to a valid image.");
-        	setInfoState();
             return;
 		}
 		try {
 			meta = new ImageMetaParser(file.getAbsolutePath(), "µm");
-        	setInfoState();
 		} catch (Exception e) {
 			e.printStackTrace();
 			IJ.error("Unable to read metadata of selected image.");
-        	setInfoState();			
 		}
 	}
 	
@@ -343,6 +345,7 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
 	    	Iterator<java.awt.Point> iterator = roi.iterator();
 			java.awt.Point p = iterator.next();
 			calibrationPoint = new int[] {(int) p.getX(), (int) p.getY()};
+	        searchMeta(imagePath.getText());
     	}
     	imp.getWindow().dispose();
     	imp.close();
