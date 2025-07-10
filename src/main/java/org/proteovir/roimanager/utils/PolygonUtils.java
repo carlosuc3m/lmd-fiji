@@ -1,8 +1,6 @@
 package org.proteovir.roimanager.utils;
 
-import java.awt.BasicStroke;
 import java.awt.Polygon;
-import java.awt.Shape;
 import java.awt.geom.Area;
 import java.awt.geom.FlatteningPathIterator;
 import java.awt.geom.Path2D;
@@ -96,8 +94,16 @@ public class PolygonUtils {
                 outer = ring;
             }
         }
+        Polygon finalPol = new Polygon();
+        int n = outer.npoints;
+        for (int i = n - 1; i >= 0; i --) {
+        	if (outer.xpoints[i] == outer.xpoints[((i+1)%n)]
+        			&& outer.ypoints[i] == outer.xpoints[((i+1)%n)])
+        		continue;
+        	finalPol.addPoint(outer.xpoints[i], outer.ypoints[i]);
+        }
 
-        return outer;
+        return finalPol;
     }
 
     /** Shoelace formula: positive or negative depending on winding */
@@ -118,35 +124,21 @@ public class PolygonUtils {
      * @return New polygon vertices after dilation
      */
     public static Polygon dilate(Polygon polygon, double distance) {
-    	Point2D.Double[] pts = new Point2D.Double[polygon.npoints];
     	List<Point> pols = new ArrayList<Point>();
     	for (int i = 0; i < polygon.npoints; i ++) {
-    		pts[i] = new Point2D.Double(polygon.xpoints[i], polygon.ypoints[i]);
     		pols.add(new Point(polygon.xpoints[i], polygon.ypoints[i]));
     	}
-    	List<List<Point>> possiblePols2 = StraightSkeletonOffset.computeOffset(pols, 1d);
+    	List<List<Point>> possiblePols2 = StraightSkeletonOffset.computeOffset(pols, distance);
     	Polygon out2 = new Polygon();
     	for (Point pp : possiblePols2.get(0)) {
     		out2.addPoint((int) pp.x, (int) pp.y);
     	}
-    	List<List<Point>> possiblePols = StraightSkeletonOffset.computeOffset(pols, -1d);
+    	List<List<Point>> possiblePols = StraightSkeletonOffset.computeOffset(pols, -distance);
     	Polygon out = new Polygon();
     	for (Point pp : possiblePols.get(0)) {
     		out.addPoint((int) pp.x, (int) pp.y);
     	}
-    	if (true)
-    		return merge(out, out2);
-        Path2D.Double path = buildPath(pts);
-        // Stroke width = 2 * distance (centered stroke)
-        BasicStroke stroke = new BasicStroke(
-                (float)(2 * distance),
-                BasicStroke.CAP_ROUND,
-                BasicStroke.JOIN_ROUND
-            );
-            Shape ring = stroke.createStrokedShape(path);
-
-            // 3) extract the OUTER ring only (this is the Minkowski-sum boundary)
-            return extractPoints(new Area(ring), 0.1);
+    	return merge(out, out2);
     }
 
     /**
@@ -156,22 +148,21 @@ public class PolygonUtils {
      * @return New polygon vertices after erosion
      */
     public static Polygon erode(Polygon polygon, double distance) {
-    	Point2D.Double[] pts = new Point2D.Double[polygon.npoints];
+    	List<Point> pols = new ArrayList<Point>();
     	for (int i = 0; i < polygon.npoints; i ++) {
-    		pts[i] = new Point2D.Double(polygon.xpoints[i], polygon.ypoints[i]);
+    		pols.add(new Point(polygon.xpoints[i], polygon.ypoints[i]));
     	}
-        Path2D.Double path = buildPath(pts);
-        BasicStroke stroke = new BasicStroke(
-            (float)(2 * distance),
-            BasicStroke.CAP_ROUND,
-            BasicStroke.JOIN_ROUND
-        );
-        Shape outline = stroke.createStrokedShape(path);
-        Area area = new Area(path);
-        area.subtract(new Area(outline));
-
-        double flatness = Math.max(0.1, Math.abs(distance) / 4);
-        return extractPoints(area, flatness);
+    	List<List<Point>> possiblePols2 = StraightSkeletonOffset.computeOffset(pols, distance);
+    	Polygon out2 = new Polygon();
+    	for (Point pp : possiblePols2.get(0)) {
+    		out2.addPoint((int) pp.x, (int) pp.y);
+    	}
+    	List<List<Point>> possiblePols = StraightSkeletonOffset.computeOffset(pols, -distance);
+    	Polygon out = new Polygon();
+    	for (Point pp : possiblePols.get(0)) {
+    		out.addPoint((int) pp.x, (int) pp.y);
+    	}
+    	return intersect(out, out2);
     }
 
     /**
@@ -223,6 +214,33 @@ public class PolygonUtils {
 
         // Union the shapes
         area1.add(area2);
+
+        // Flatten and extract outline points
+        double flatness = 0.1;
+        return extractPoints(area1, flatness);
+    }
+
+    /**
+     * Merges two overlapping polygons into a single combined region.
+     * @param pol1 Vertices of the first polygon
+     * @param pol2 Vertices of the second polygon
+     * @return Vertices of the merged polygon
+     */
+    public static Polygon intersect(Polygon pol1, Polygon pol2) {
+    	Point2D.Double[] pts1 = new Point2D.Double[pol1.npoints];
+    	for (int i = 0; i < pol1.npoints; i ++) {
+    		pts1[i] = new Point2D.Double(pol1.xpoints[i], pol1.ypoints[i]);
+    	}
+    	Point2D.Double[] pts2 = new Point2D.Double[pol2.npoints];
+    	for (int i = 0; i < pol2.npoints; i ++) {
+    		pts2[i] = new Point2D.Double(pol2.xpoints[i], pol2.ypoints[i]);
+    	}
+        // Build areas for both polygons
+        Area area1 = new Area(buildPath(pts1));
+        Area area2 = new Area(buildPath(pts2));
+
+        // Union the shapes
+        area1.intersect(area2);
 
         // Flatten and extract outline points
         double flatness = 0.1;

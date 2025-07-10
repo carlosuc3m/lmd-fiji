@@ -183,7 +183,7 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 		int[] indices = list.getSelectedIndices();
 		for (int ind : indices) {
 			Mask mask = rois.get(ind);
-			Polygon newPol = PolygonUtils.dilate(mask.getContour(), 0.5);
+			Polygon newPol = PolygonUtils.dilate(mask.getContour(), 1);
 			mask.setContour(newPol);
 			consumer.setRois(rois, ind);
 		}
@@ -195,7 +195,7 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 		int[] indices = list.getSelectedIndices();
 		for (int ind : indices) {
 			Mask mask = rois.get(ind);
-			Polygon newPol = PolygonUtils.erode(mask.getContour(), 0.5);
+			Polygon newPol = PolygonUtils.erode(mask.getContour(), 1);
 			mask.setContour(newPol);
 			consumer.setRois(rois, ind);
 		}
