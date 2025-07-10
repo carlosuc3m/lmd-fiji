@@ -156,6 +156,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 
 	public SidePanel(RoiManagerConsumer consumer) {
 		super(consumer);
+		cellposeBtn.setEnabled(false);
 		samjBtn.setEnabled(false);
 		activationBtn.setEnabled(false);
 		
@@ -165,6 +166,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 
 		roiManager.getList().addMouseListener(this);
 		roiManager.setExportLMDcallback((masks) -> exportLMDFormat(masks));
+		cellposeBtn.addActionListener(this);
 		samjBtn.addActionListener(this);
 		activationBtn.addActionListener(this);
 		ImagePlus.addImageListener(this);
@@ -195,6 +197,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 			activationLabel.setText(ONLY_PROMPTS);
 			return;
 		} else {
+			cellposeBtn.setEnabled(true);
 			samjBtn.setEnabled(true);
 			samjBtn.setSelected(false);
 			activationBtn.setSelected(false);
@@ -408,6 +411,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		this.imageGUI.setTargetSet(false);
 		this.activationBtn.setSelected(false);
 		this.activationBtn.setEnabled(false);
+		this.cellposeBtn.setEnabled(false);
 		this.samjBtn.setEnabled(false);
 		this.samjBtn.setSelected(false);
 		this.imageGUI.imagePath.setText("");

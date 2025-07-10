@@ -30,6 +30,8 @@ public class SidePanelGUI extends JPanel {
     
     protected ImageGUI imageGUI;
     
+    protected ColoredButton cellposeBtn;
+    
     protected ColoredButton samjBtn;
     
     protected ColoredButton activationBtn;
@@ -89,15 +91,17 @@ public class SidePanelGUI extends JPanel {
     		+ "</html>";
     
     
-    private static final double ROI_MANAGER_H_RATIO = 0.46d;
+    private static final double ROI_MANAGER_H_RATIO = 0.542d;
     
-    private static final double CAL_PANEL_H_RATIO = 0.1d;
+    private static final double CAL_PANEL_H_RATIO = 0.067d;
     
     private static final double STATUS_PANEL_H_RATIO = 0.03d;
     
-    private static final double IMAGE_PANEL_H_RATIO = 0.10d;
+    private static final double IMAGE_PANEL_H_RATIO = 0.067d;
     
     private static final double SAMJ_BUTON_H_RATIO = 0.05d;
+    
+    private static final double CELLPOSE_BUTON_H_RATIO = 0.05d;
     
     private static final double ACTIVATION_BUTON_H_RATIO = 0.035d;
     
@@ -136,7 +140,9 @@ public class SidePanelGUI extends JPanel {
 					&& thirdCalibration.isCalibrated();
 			roiManager.readyToExport(allGood && imageGUI.isDefined());
 		});
-		
+
+		cellposeBtn = new ColoredButton("CELLPOSE", new Color(150, 255, 150), Color.LIGHT_GRAY,
+				new Color(190, 255, 190), new Color(220, 220, 220));
 		samjBtn = new ColoredButton("SAMJ", new Color(150, 255, 150), Color.LIGHT_GRAY,
 				new Color(190, 255, 190), new Color(220, 220, 220));
 		activationBtn =  new ColoredButton("Activate", new Color(150, 255, 150), Color.LIGHT_GRAY,
@@ -153,6 +159,7 @@ public class SidePanelGUI extends JPanel {
 		add(secondCalibration);
 		add(thirdCalibration);
 		add(imageGUI);
+		add(cellposeBtn);
 		add(samjBtn);
 		add(activationBtn);
 		add(activationLabel);
@@ -168,6 +175,7 @@ public class SidePanelGUI extends JPanel {
         int statusH = Math.max(inset, (int) (rawH * STATUS_PANEL_H_RATIO));
         int calH = Math.max(inset, (int) (rawH * CAL_PANEL_H_RATIO));
         int imH = Math.max(inset, (int) (rawH * IMAGE_PANEL_H_RATIO));
+        int cellposeH = Math.max(inset, (int) (rawH * CELLPOSE_BUTON_H_RATIO));
         int samjH = Math.max(inset, (int) (rawH * SAMJ_BUTON_H_RATIO));
         int actH = Math.max(inset, (int) (rawH * ACTIVATION_BUTON_H_RATIO));
         int actLabelH = Math.max(inset, (int) (rawH * ACTIVATION_LABEL_H_RATIO));
@@ -185,12 +193,14 @@ public class SidePanelGUI extends JPanel {
         y = statusH + calH * 3;
         imageGUI.setBounds(inset, y, w, imH - inset);
         y = statusH + calH * 3 + imH;
+        cellposeBtn.setBounds(inset, y, w, cellposeH - inset);
+        y = statusH + calH * 3 + imH + cellposeH;
         samjBtn.setBounds(inset, y, w, samjH - inset);
-        y = statusH + calH * 3 + imH + samjH;
+        y = statusH + calH * 3 + imH + cellposeH + samjH;
         activationBtn.setBounds(inset, y, w, actH - inset);
-        y = statusH + calH * 3 + imH + samjH + actH;
+        y = statusH + calH * 3 + imH + cellposeH + samjH + actH;
         activationLabel.setBounds(inset, y, w, actLabelH - inset);
-        y = statusH + calH * 3 + imH + samjH + actH + actLabelH;
+        y = statusH + calH * 3 + imH + cellposeH + samjH + actH + actLabelH;
 
         roiManager.setBounds(inset, y, w, roiH - inset);
 	}
