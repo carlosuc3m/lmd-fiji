@@ -42,30 +42,28 @@ public class PolygonUtils {
      * @return
      */
     private static Polygon extractPoints(Area area, double flatness) {
-        List<Polygon> rings = new ArrayList<>();
+        List<List<Point>> rings = new ArrayList<>();
         PathIterator pit = new FlatteningPathIterator(area.getPathIterator(null), flatness);
         double[] coords = new double[6];
-        Polygon current = null;
+        List<Point> current = null;
         boolean inRing = false;
 
         while (!pit.isDone()) {
             int type = pit.currentSegment(coords);
             switch (type) {
               case PathIterator.SEG_MOVETO:
-                current = new Polygon();
+                current = new ArrayList<Point>();
                 rings.add(current);
-                current.addPoint(
-                  (int)Math.round(coords[0]),
-                  (int)Math.round(coords[1])
+                current.add(
+                  new Point(Math.round(coords[0]), Math.round(coords[1]))
                 );
                 inRing = true;
                 break;
 
               case PathIterator.SEG_LINETO:
                 if (inRing) {
-                    current.addPoint(
-                      (int)Math.round(coords[0]),
-                      (int)Math.round(coords[1])
+                    current.add(
+                      new Point(Math.round(coords[0]), Math.round(coords[1]))
                     );
                 }
                 break;
@@ -73,10 +71,7 @@ public class PolygonUtils {
               case PathIterator.SEG_CLOSE:
                 if (inRing) {
                     // close the ring by repeating first point
-                    current.addPoint(
-                      current.xpoints[0],
-                      current.ypoints[0]
-                    );
+                    // TODO current.add(current.get(0));
                     inRing = false;
                 }
                 break;
@@ -85,33 +80,39 @@ public class PolygonUtils {
         }
 
         // 2) Pick the ring with the largest absolute area
-        Polygon outer = null;
+        List<Point> outer = null;
         double maxArea = -1;
-        for (Polygon ring : rings) {
+        for (List<Point> ring : rings) {
             double a = Math.abs(signedArea(ring));
             if (a > maxArea) {
                 maxArea = a;
                 outer = ring;
             }
         }
-        Polygon finalPol = new Polygon();
-        int n = outer.npoints;
+        if (outer == null)
+        	return null;
+        int n = outer.size();
+        List<Point> points = new ArrayList<Point>();
         for (int i = n - 1; i >= 0; i --) {
-        	if (outer.xpoints[i] == outer.xpoints[((i+1)%n)]
-        			&& outer.ypoints[i] == outer.xpoints[((i+1)%n)])
+        	if (outer.get(i).x == outer.get((i+1)%n).x
+        			&& outer.get(i).y == outer.get((i+1)%n).y)
         		continue;
-        	finalPol.addPoint(outer.xpoints[i], outer.ypoints[i]);
+        	points.add(new Point(outer.get(i).x, outer.get(i).y));
         }
 
-        return finalPol;
+        return new Polygon(
+        		points.stream().mapToInt(p -> (int) p.x).toArray(),
+        		points.stream().mapToInt(p -> (int) p.y).toArray(),
+        		points.size()
+        		);
     }
 
     /** Shoelace formula: positive or negative depending on winding */
-    private static double signedArea(Polygon p) {
+    private static double signedArea(List<Point> p) {
         double sum = 0;
-        int n = p.npoints;
+        int n = p.size();
         for (int i = 0, j = n - 1; i < n; j = i++) {
-            sum += (p.xpoints[j] * p.ypoints[i] - p.xpoints[i] * p.ypoints[j]);
+            sum += (p.get(j).x * p.get(j).y - p.get(i).x * p.get(j).y);
         }
         return sum / 2.0;
     }
@@ -129,15 +130,17 @@ public class PolygonUtils {
     		pols.add(new Point(polygon.xpoints[i], polygon.ypoints[i]));
     	}
     	List<List<Point>> possiblePols2 = StraightSkeletonOffset.computeOffset(pols, distance);
-    	Polygon out2 = new Polygon();
-    	for (Point pp : possiblePols2.get(0)) {
-    		out2.addPoint((int) pp.x, (int) pp.y);
-    	}
+    	Polygon out2 = new Polygon(
+    			possiblePols2.get(0).stream().mapToInt(p -> (int) p.x).toArray(),
+    			possiblePols2.get(0).stream().mapToInt(p -> (int) p.y).toArray(),
+    			possiblePols2.get(0).size()
+    		);
     	List<List<Point>> possiblePols = StraightSkeletonOffset.computeOffset(pols, -distance);
-    	Polygon out = new Polygon();
-    	for (Point pp : possiblePols.get(0)) {
-    		out.addPoint((int) pp.x, (int) pp.y);
-    	}
+    	Polygon out = new Polygon(
+    			possiblePols.get(0).stream().mapToInt(p -> (int) p.x).toArray(),
+    			possiblePols.get(0).stream().mapToInt(p -> (int) p.y).toArray(),
+    			possiblePols.get(0).size()
+    		);
     	return merge(out, out2);
     }
 
@@ -153,16 +156,22 @@ public class PolygonUtils {
     		pols.add(new Point(polygon.xpoints[i], polygon.ypoints[i]));
     	}
     	List<List<Point>> possiblePols2 = StraightSkeletonOffset.computeOffset(pols, distance);
-    	Polygon out2 = new Polygon();
-    	for (Point pp : possiblePols2.get(0)) {
-    		out2.addPoint((int) pp.x, (int) pp.y);
-    	}
+    	Polygon out2 = new Polygon(
+    			possiblePols2.get(0).stream().mapToInt(p -> (int) p.x).toArray(),
+    			possiblePols2.get(0).stream().mapToInt(p -> (int) p.y).toArray(),
+    			possiblePols2.get(0).size()
+    		);
     	List<List<Point>> possiblePols = StraightSkeletonOffset.computeOffset(pols, -distance);
-    	Polygon out = new Polygon();
-    	for (Point pp : possiblePols.get(0)) {
-    		out.addPoint((int) pp.x, (int) pp.y);
-    	}
-    	return intersect(out, out2);
+    	Polygon out = new Polygon(
+    			possiblePols.get(0).stream().mapToInt(p -> (int) p.x).toArray(),
+    			possiblePols.get(0).stream().mapToInt(p -> (int) p.y).toArray(),
+    			possiblePols.get(0).size()
+    		);
+    	Polygon finalPol =  intersect(out, out2);
+    	if (finalPol == null)
+    		return polygon;
+    	else
+    		return finalPol;
     }
 
     /**
@@ -226,7 +235,7 @@ public class PolygonUtils {
      * @param pol2 Vertices of the second polygon
      * @return Vertices of the merged polygon
      */
-    public static Polygon intersect(Polygon pol1, Polygon pol2) {
+    private static Polygon intersect(Polygon pol1, Polygon pol2) {
     	Point2D.Double[] pts1 = new Point2D.Double[pol1.npoints];
     	for (int i = 0; i < pol1.npoints; i ++) {
     		pts1[i] = new Point2D.Double(pol1.xpoints[i], pol1.ypoints[i]);
