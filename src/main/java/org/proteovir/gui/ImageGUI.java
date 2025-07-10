@@ -1,9 +1,11 @@
 package org.proteovir.gui;
 
+import java.awt.Color;
 import java.awt.Polygon;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
@@ -16,7 +18,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
 
 import org.proteovir.gui.components.PlaceholderTextField;
@@ -32,7 +33,6 @@ public class ImageGUI extends JPanel implements DocumentListener {
 	private boolean imSet = false;
 	private ImageMetaParser meta;
     private String calImage;
-    private String calMeta;
 
     private Runnable changeImageCallback;
 	private Function<File, Boolean> openImageCallback;
@@ -41,13 +41,13 @@ public class ImageGUI extends JPanel implements DocumentListener {
     JLabel title;
     PlaceholderTextField imagePath;
     JButton imageBtn;
-    PlaceholderTextField metadataPath;
-    JButton metaBtn;
+    
+    private static final String META_SUFFIX = "_Properties.xml";
+    
+    private static final String META_FOLDER = "MetaData";
 
     private static final String ADD_IM = "Add image";
-    private static final String ADD_META = "Add metadata";
     private static final String CHANGE_IM = "Change image";
-    private static final String CHANGE_META = "Change metadata";
     
     private static final String ALL_SET = ""
     		+ "<html>"
@@ -56,16 +56,16 @@ public class ImageGUI extends JPanel implements DocumentListener {
 
     protected static final String CALIBRATION_NOT_SET = ""
     		+ "<html>"
-    		+ "<span style=\"color: purple;\">Calibration missing</span>"
+    		+ "<span style=\"color: #D8BFD8;\">Calibration missing</span>"
     		+ "</html>";
     private static final String NOT_SET_TEXT = ""
     		+ "<html>"
-            + "Target image "
+            + "<span style=\"color: white;\"> Target image </span>"
             + "<span style=\"color: red;\">not set</span>"
             + "</html>";
     private static final String META_NOT_SET_TEXT = ""
     		+ "<html>"
-            + "Target image "
+            + "<span style=\"color: white;\"> Target image </span>"
             + "<span style=\"color: red;\"> medatada not set</span>"
             + "</html>";
 
@@ -73,22 +73,19 @@ public class ImageGUI extends JPanel implements DocumentListener {
 
 	public ImageGUI() {
         setLayout(null);
+		setOpaque(true);
+		setBackground(Color.black);
 		title = new JLabel(NOT_SET_TEXT);
 		title.setHorizontalAlignment(SwingConstants.CENTER);
 		title.setVerticalAlignment(SwingConstants.CENTER);
 		imagePath = new PlaceholderTextField("Choose target image");
 		imagePath.getDocument().addDocumentListener(this);
-		metadataPath = new PlaceholderTextField("Choose metadata for target image");
-		metadataPath.getDocument().addDocumentListener(this);
 		
 		imageBtn = new JButton("Add image");
-		metaBtn = new JButton("Add metadata");
 		
 		add(title);
 		add(imagePath);
 		add(imageBtn);
-		add(metadataPath);
-		add(metaBtn);
 		
 		imageBtn.addActionListener(e -> {
 			if (new File(imagePath.getText()).isFile() && !imSet) {
@@ -107,30 +104,6 @@ public class ImageGUI extends JPanel implements DocumentListener {
 		        File selected = chooser.getSelectedFile();
 		        imagePath.setText(selected.getAbsolutePath());
 		        openImage(selected.getAbsolutePath());
-		    }
-		});
-		
-		metaBtn.addActionListener(e -> {
-			if (new File(metadataPath.getText()).isFile() && meta == null) {
-				openMeta(metadataPath.getText());
-		        return;
-			}
-		    JFileChooser chooser;
-		    if (new File(metadataPath.getText()).isDirectory())
-		    	chooser = new JFileChooser(metadataPath.getText());
-	    	else
-		    	chooser = new JFileChooser();
-		    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		    FileNameExtensionFilter xmlFilter =
-		    	    new FileNameExtensionFilter("XML Files (*.xml)", "xml");
-	    	chooser.setFileFilter(xmlFilter);
-	    	chooser.setAcceptAllFileFilterUsed(false);
-
-		    int result = chooser.showOpenDialog(metaBtn.getParent());
-		    if (result == JFileChooser.APPROVE_OPTION) {
-		        File selected = chooser.getSelectedFile();
-		        metadataPath.setText(selected.getAbsolutePath());
-		        openMeta(selected.getAbsolutePath());
 		    }
 		});
 		
@@ -167,40 +140,6 @@ public class ImageGUI extends JPanel implements DocumentListener {
 		        }
 		    }
 		});
-		
-		metadataPath.setTransferHandler(new TransferHandler() {
-			private static final long serialVersionUID = -4114518312821048355L;
-
-			@Override
-		    public boolean canImport(TransferSupport support) {
-		        return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
-		    }
-
-		    @Override
-		    public boolean importData(TransferSupport support) {
-		        if (!canImport(support)) return false;
-		        try {
-		            @SuppressWarnings("unchecked")
-		            List<File> files = (List<File>) 
-		                support.getTransferable()
-		                       .getTransferData(DataFlavor.javaFileListFlavor);
-
-		            // Reject if not exactly one
-		            if (files.size() != 1) {
-		                Toolkit.getDefaultToolkit().beep();
-		                return false;
-		            }
-
-		            File f = files.get(0);
-		            metadataPath.setText(f.getAbsolutePath());
-			        openMeta(f.getAbsolutePath());
-		            return true;
-		        } catch (Exception ex) {
-		            ex.printStackTrace();
-		            return false;
-		        }
-		    }
-		});
     }
 	
 	@Override
@@ -209,9 +148,8 @@ public class ImageGUI extends JPanel implements DocumentListener {
         int rawH = getHeight();
         int inset = 2;
         
-        int labelH = Math.max(inset, (int) (rawH / 3));
-        int imH = Math.max(inset, (int) (rawH / 3));
-        int metaH = Math.max(inset, (int) (rawH / 3));
+        int labelH = Math.max(inset, (int) (rawH / 2));
+        int imH = Math.max(inset, (int) (rawH / 2));
         
         int y = inset;
         title.setBounds(inset, y, rawW - 2 * inset, labelH - inset);
@@ -221,8 +159,6 @@ public class ImageGUI extends JPanel implements DocumentListener {
         imagePath.setBounds(inset, y, pathW, imH - inset);
         imageBtn.setBounds(inset + pathW + inset, y, btnW, imH - inset);
         y = labelH + imH;
-        metadataPath.setBounds(inset, y, pathW, metaH - inset);
-        metaBtn.setBounds(inset + pathW + inset, y, btnW, metaH - inset);
 	}
 
 	public Polygon toAbsCoord(Polygon pol) {
@@ -262,20 +198,15 @@ public class ImageGUI extends JPanel implements DocumentListener {
 	
 	public void block(boolean block) {
 		this.imageBtn.setEnabled(!block);
-		this.metaBtn.setEnabled(!block);
 		this.imagePath.setEditable(!block);
 		this.imagePath.setEnabled(!block);
-		this.metadataPath.setEditable(!block);
-		this.metadataPath.setEnabled(!block);
 	}
 	
 	private void setDefault(boolean modifyTextField) {
 		title.setText(NOT_SET_TEXT);
 		if (modifyTextField) imagePath.setText("");
-		if (modifyTextField) metadataPath.setText("");
 
 		imageBtn.setText(ADD_IM);
-		metaBtn.setText(ADD_META);
 	}
 	
 	private void setInfoState() {
@@ -287,22 +218,17 @@ public class ImageGUI extends JPanel implements DocumentListener {
 		if (imSet && meta == null) {
 			title.setText(META_NOT_SET_TEXT);
 			imageBtn.setText(CHANGE_IM);
-			metaBtn.setText(ADD_META);
-			if (modifyTextField) metadataPath.setText("");
 		} else if (!imSet && meta != null) {
 			title.setText(NOT_SET_TEXT);
 			imageBtn.setText(ADD_IM);
-			metaBtn.setText(CHANGE_META);
 			if (modifyTextField) imagePath.setText("");
 		} else if (imSet && meta != null && !isCalibrated) {
 			title.setText(CALIBRATION_NOT_SET);
 			imageBtn.setText(CHANGE_IM);
-			metaBtn.setText(CHANGE_META);
 			good = true;
 		} else if (imSet && meta != null) {
 			title.setText(ALL_SET);
 			imageBtn.setText(CHANGE_IM);
-			metaBtn.setText(CHANGE_META);
 			good = true;
 		} else {
 			setDefault(modifyTextField);
@@ -310,25 +236,39 @@ public class ImageGUI extends JPanel implements DocumentListener {
 		this.roiManagerCallback.run();
 	}
 	
+	private void searchMeta(String imgFile) {
+		File metaFolder = new File(new File(imgFile).getParent() + File.separator + META_FOLDER);
+		if (!metaFolder.isDirectory()
+				|| metaFolder.listFiles() == null
+				|| metaFolder.listFiles().length == 0) {
+        	IJ.error("Unable to find corresponding metadata");
+			return;
+		}
+		File metaFile = Arrays.stream(metaFolder.listFiles())
+				.filter(ff -> ff.getName().endsWith(META_SUFFIX))
+				.findFirst().orElse(null);
+		if (metaFile == null) {
+        	IJ.error("Unable to find corresponding metadata");
+			return;
+		}
+		openMeta(metaFile.getAbsolutePath());
+	}
+	
 	private synchronized void openMeta(String strFile) {
 		meta = null;
-		calMeta = null;
 		File file = new File(strFile);
 		if (!file.isFile() || !file.getAbsolutePath().endsWith(".xml")) {
         	IJ.error("File did not correspond to a valid image.");
         	setInfoState();
-        	metadataPath.setTempPlaceholder("Select a valid .xml file");
             return;
 		}
 		try {
 			meta = new ImageMetaParser(file.getAbsolutePath(), "µm");
-			calMeta = strFile;
         	setInfoState();
 		} catch (Exception e) {
 			e.printStackTrace();
 			IJ.error("Please select a valid properties.xml file.");
         	setInfoState();
-        	metadataPath.setTempPlaceholder("Select a valid .xml file");
 			
 		}
 	}
@@ -344,6 +284,7 @@ public class ImageGUI extends JPanel implements DocumentListener {
             imSet = openImageCallback.apply(new File(strFile));
             if (imSet)
             	calImage = strFile;
+            searchMeta(strFile);
     		setInfoState();
     		if (!imSet)
             	imagePath.setTempPlaceholder("Choose a valid image");
@@ -359,11 +300,7 @@ public class ImageGUI extends JPanel implements DocumentListener {
         SwingUtilities.invokeLater(() -> {
         	try {
 				String str = e.getDocument().getText(0, e.getDocument().getLength());
-	        	if (e.getDocument().equals(metadataPath.getDocument()) && meta != null
-	        			&& (calMeta == null || !calMeta.equals(str))) {
-	        		meta = null;
-	        		setInfoState(false);
-	        	} else if (e.getDocument().equals(imagePath.getDocument()) && imSet
+	        	if (e.getDocument().equals(imagePath.getDocument()) && imSet
 	        			&& (calImage == null || !calImage.equals(str))) {
 	        		imSet = false;
 	        		changeImageCallback.run();

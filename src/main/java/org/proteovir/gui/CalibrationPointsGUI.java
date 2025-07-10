@@ -88,6 +88,8 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
 
 	public CalibrationPointsGUI(int n) {
         setLayout(null);
+		setOpaque(true);
+		setBackground(Color.white);
 		this.n = n;
 		title = new JLabel(String.format(NOT_SET_TEXT, "" + n));
 		imagePath = new PlaceholderTextField(String.format(NOT_SET_IM, "" + n));
