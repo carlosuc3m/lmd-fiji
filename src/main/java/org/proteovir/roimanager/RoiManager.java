@@ -11,6 +11,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -20,6 +21,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.proteovir.roimanager.commands.Command;
+import org.proteovir.roimanager.commands.DeleteRoiCommand;
 import org.proteovir.roimanager.commands.ModifyRoiCommand;
 import org.proteovir.roimanager.utils.PolygonUtils;
 
@@ -104,6 +106,7 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 	}
 
 	public void deleteAll() {
+		this.commandCallback.accept(new DeleteRoiCommand(this, rois));
 		rois.clear();
 		listModel.removeAllElements();
 		updateShowAll();
@@ -114,6 +117,8 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 		int count = this.getROIsNumber();
 		if (count==0 || index>=count)
 			return;
+
+		this.commandCallback.accept(new DeleteRoiCommand(this, Arrays.asList(new Mask[] {rois.get(index)})));
 		rois.remove(index);
 		listModel.remove(index);
 		updateShowAll();
@@ -122,13 +127,16 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 	/** Deletes the ROI at 'index' and updates the display. */
 	public void delete(int[] indeces) {
 		int count = this.getROIsNumber();
+		List<Mask> deleted = new ArrayList<Mask>();
 		for (int i = indeces.length - 1; i >= 0; i --) {
 			int index = indeces[i];
 			if (count == 0 || index >= count)
 				continue;
+			deleted.add(rois.get(index));
 			rois.remove(index);
 			listModel.remove(index);
 		}
+		this.commandCallback.accept(new DeleteRoiCommand(this, deleted));
 		updateShowAll();
 	}
 

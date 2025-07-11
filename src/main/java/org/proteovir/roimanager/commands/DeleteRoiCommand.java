@@ -2,6 +2,7 @@ package org.proteovir.roimanager.commands;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.proteovir.roimanager.RoiManager;
 
@@ -13,7 +14,7 @@ public class DeleteRoiCommand implements Command {
   
 	public DeleteRoiCommand(RoiManager roiManager, List<Mask> polys) {
 		this.roiManager = roiManager;
-		this.polys = polys;
+		this.polys = polys.stream().collect(Collectors.toList());
 	}
 	
 	public void execute() {
