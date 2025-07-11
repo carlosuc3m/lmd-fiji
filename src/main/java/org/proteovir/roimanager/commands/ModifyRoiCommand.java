@@ -28,6 +28,8 @@ public class ModifyRoiCommand implements Command {
 			idMap.put(OLD_KEY, null);
 			idMap.put(NEW_KEY, null);
 			modsMap.put(id, idMap);
+		} else if (modsMap.get(id).get(OLD_KEY) != null) {
+			return;
 		}
 		modsMap.get(id).put(OLD_KEY, oldContour);
 	}

@@ -178,19 +178,25 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 	private void merge() {
 		if (list.getSelectedIndex() == -1 || list.getSelectedIndices().length <= 1)
 			return;
+		ModifyRoiCommand command = new ModifyRoiCommand(this, rois);
 		for (int i = list.getSelectedIndices().length - 1; i >= 0; i --) {
 			int ii = list.getSelectedIndices()[i];
+			command.setOldContour(rois.get(ii).getUUID(), rois.get(ii).getContour());
 			for (int j = i - 1; j >= 0; j --) {
 				int jj = list.getSelectedIndices()[j];
 				if (!PolygonUtils.overlaps(rois.get(ii).getContour(), rois.get(jj).getContour()))
 					continue;
 				Mask roi = rois.get(jj);
+				command.setOldContour(roi.getUUID(), roi.getContour());
 				roi.setContour(PolygonUtils.merge(roi.getContour(), rois.get(ii).getContour()));
+				command.setNewContour(roi.getUUID(), roi.getContour());
+				command.setNewContour(rois.get(ii).getUUID(), null);
 				rois.remove(rois.get(ii));
 				listModel.remove(ii);
 				break;
 			}
 		}
+		this.commandCallback.accept(command);
 		this.consumer.setRois(rois);
 	}
 	
