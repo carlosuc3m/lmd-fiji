@@ -279,10 +279,10 @@ public class ImageGUI extends JPanel implements DocumentListener {
         		setInfoState();
         		return;
             }
+            searchMeta(strFile);
             imSet = openImageCallback.apply(new File(strFile));
             if (imSet)
             	calImage = strFile;
-            searchMeta(strFile);
     		setInfoState();
     		if (!imSet)
             	imagePath.setTempPlaceholder("Choose a valid image");
