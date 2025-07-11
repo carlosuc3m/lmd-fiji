@@ -184,8 +184,11 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 			command.setOldContour(rois.get(ii).getUUID(), rois.get(ii).getContour());
 			for (int j = i - 1; j >= 0; j --) {
 				int jj = list.getSelectedIndices()[j];
-				if (!PolygonUtils.overlaps(rois.get(ii).getContour(), rois.get(jj).getContour()))
+				if (!PolygonUtils.overlaps(rois.get(ii).getContour(), rois.get(jj).getContour())) {
+					command.setNewContour(rois.get(ii).getUUID(), rois.get(ii).getContour());
+					command.setNewContour(rois.get(jj).getUUID(), rois.get(jj).getContour());
 					continue;
+				}
 				Mask roi = rois.get(jj);
 				command.setOldContour(roi.getUUID(), roi.getContour());
 				roi.setContour(PolygonUtils.merge(roi.getContour(), rois.get(ii).getContour()));
