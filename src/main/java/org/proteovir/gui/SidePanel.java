@@ -166,6 +166,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 
 		roiManager.getList().addMouseListener(this);
 		roiManager.setExportLMDcallback((masks) -> exportLMDFormat(masks));
+		roiManager.addCommandCallback((cmd) -> annotatedMask.add(cmd));
 		cellposeBtn.addActionListener(this);
 		samjBtn.addActionListener(this);
 		activationBtn.addActionListener(this);
