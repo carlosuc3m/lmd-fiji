@@ -1,9 +1,9 @@
 package org.proteovir.roimanager.commands;
 
 import java.awt.Polygon;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.proteovir.roimanager.RoiManager;
 
@@ -19,7 +19,7 @@ public class ModifyRoiCommand implements Command {
   
 	public ModifyRoiCommand(RoiManager roiManager, List<Mask> polys) {
 		this.roiManager = roiManager;
-		this.polys = polys;
+		this.polys = polys.stream().collect(Collectors.toList());
 	}
 	
 	public void setOldContour(String id, Polygon oldContour) {
@@ -46,25 +46,23 @@ public class ModifyRoiCommand implements Command {
   
 	@Override
 	public void execute() {
-		for (Mask m : polys)
-			this.roiManager.addRoi(m);
+		int n = polys.size();
+		for (int i = n - 1; i >= 0; i --) {
+			Mask m = polys.get(i);
+			if (modsMap.get(m.getUUID()) == null)
+				continue;
+			if (modsMap.get(m.getUUID()).get(NEW_KEY) == null)
+				roiManager.delete(i);
+			else
+				roiManager.getRoisAsArray()[i].setContour(modsMap.get(m.getUUID()).get(NEW_KEY));
+		}
 		this.roiManager.updateShowAll();
 	}
   
 	@Override
 	public void undo() {
-		for (Mask rr2 : polys) {
-	    	for (int n = this.roiManager.getROIsNumber() - 1; n >= 0; n --) {
-	    		Mask rr = roiManager.getRoisAsArray()[n];
-    			if (!Arrays.equals(rr.getContour().xpoints, rr2.getContour().xpoints))
-    				continue;
-    			if (!Arrays.equals(rr.getContour().ypoints, rr2.getContour().ypoints))
-    				continue;
-    			roiManager.delete(n);
-	    		break;		    		
-	    	}
-			
-		}
+		for (Mask m : polys)
+			this.roiManager.addRoi(m);
 		this.roiManager.updateShowAll();
 	}
 }
