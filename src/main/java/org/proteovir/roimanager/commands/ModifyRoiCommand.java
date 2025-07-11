@@ -27,6 +27,7 @@ public class ModifyRoiCommand implements Command {
 			HashMap<String, Polygon> idMap = new HashMap<String, Polygon>();
 			idMap.put(OLD_KEY, null);
 			idMap.put(NEW_KEY, null);
+			modsMap.put(id, idMap);
 		}
 		modsMap.get(id).put(OLD_KEY, oldContour);
 	}
@@ -36,6 +37,7 @@ public class ModifyRoiCommand implements Command {
 			HashMap<String, Polygon> idMap = new HashMap<String, Polygon>();
 			idMap.put(OLD_KEY, null);
 			idMap.put(NEW_KEY, null);
+			modsMap.put(id, idMap);
 		}
 		modsMap.get(id).put(NEW_KEY, newContour);
 	}
@@ -61,6 +63,7 @@ public class ModifyRoiCommand implements Command {
   
 	@Override
 	public void undo() {
+		this.roiManager.deleteAll();
 		for (Mask m : polys)
 			this.roiManager.addRoi(m);
 		this.roiManager.updateShowAll();
