@@ -64,8 +64,11 @@ public class ModifyRoiCommand implements Command {
 	@Override
 	public void undo() {
 		this.roiManager.deleteAll();
-		for (Mask m : polys)
+		for (Mask m : polys) {
+			if (modsMap.get(m.getUUID()) != null)
+				m.setContour(modsMap.get(m.getUUID()).get(OLD_KEY));
 			this.roiManager.addRoi(m);
+		}
 		this.roiManager.updateShowAll();
 	}
 }

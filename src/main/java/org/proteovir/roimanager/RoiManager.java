@@ -137,6 +137,7 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 			consumer.setRois(rois);
 		else
 			consumer.deleteAllRois();
+		consumer.setSelected(null);
 	}
 	
 	private void addRoiFromGUI() {
