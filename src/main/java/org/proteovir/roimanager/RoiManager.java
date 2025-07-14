@@ -154,14 +154,15 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 			return;
 		int[] indices = list.getSelectedIndices();
 		ModifyRoiCommand command = new ModifyRoiCommand(this, rois);
+		Mask mask = null;
 		for (int ind : indices) {
-			Mask mask = rois.get(ind);
+			mask = rois.get(ind);
 			command.setOldContour(mask.getUUID(), mask.getContour());
 			mask.simplify();
 			command.setNewContour(mask.getUUID(), mask.getContour());
-			consumer.setSelected(mask);
-			consumer.setRois(rois, ind);
+			consumer.setRois(rois);
 		}
+		consumer.setSelected(mask);
 		this.commandCallback.accept(command);
 	}
 	
@@ -170,19 +171,22 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 			return;
 		int[] indices = list.getSelectedIndices();
 		ModifyRoiCommand command = new ModifyRoiCommand(this, rois);
+		Mask mask = null;
 		for (int ind : indices) {
-			Mask mask = rois.get(ind);
+			mask = rois.get(ind);
 			command.setOldContour(mask.getUUID(), mask.getContour());
 			mask.complicate();
 			command.setNewContour(mask.getUUID(), mask.getContour());
-			consumer.setRois(rois, ind);
+			consumer.setRois(rois);
 		}
+		consumer.setSelected(mask);
 		this.commandCallback.accept(command);
 	}
 	
 	private void merge() {
 		if (list.getSelectedIndex() == -1 || list.getSelectedIndices().length <= 1)
 			return;
+		Mask roi = null;
 		ModifyRoiCommand command = new ModifyRoiCommand(this, rois);
 		for (int i = list.getSelectedIndices().length - 1; i >= 0; i --) {
 			int ii = list.getSelectedIndices()[i];
@@ -194,7 +198,7 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 					command.setNewContour(rois.get(jj).getUUID(), rois.get(jj).getContour());
 					continue;
 				}
-				Mask roi = rois.get(jj);
+				roi = rois.get(jj);
 				command.setOldContour(roi.getUUID(), roi.getContour());
 				roi.setContour(PolygonUtils.merge(roi.getContour(), rois.get(ii).getContour()));
 				command.setNewContour(roi.getUUID(), roi.getContour());
@@ -204,8 +208,9 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 				break;
 			}
 		}
-		this.commandCallback.accept(command);
-		this.consumer.setRois(rois);
+		commandCallback.accept(command);
+		consumer.setRois(rois);
+		consumer.setSelected(roi);
 	}
 	
 	private void dilate() {
