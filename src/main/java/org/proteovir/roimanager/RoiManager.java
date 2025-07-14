@@ -52,9 +52,13 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 		        return;
 		    rois.get(ii).clear();
 		    rois.get(ii).setContour(pol);
-		    consumer.setRois(rois, ii);
+		    // consumer.setRois(rois, ii);
+		    consumer.setRois(rois);
+		    consumer.setSelected(rois.get(ii));
 		};
 		consumer.setModifyRoiCallback(mod);
+		
+		consumer.setSelectedCallback((i) -> list.setSelectedIndex(i));
     }
 
 	protected void addButton(String label) {
@@ -218,14 +222,16 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 			return;
 		ModifyRoiCommand command = new ModifyRoiCommand(this, rois);
 		int[] indices = list.getSelectedIndices();
+		Mask mask = null;
 		for (int ind : indices) {
-			Mask mask = rois.get(ind);
+			mask = rois.get(ind);
 			command.setOldContour(mask.getUUID(), mask.getContour());
 			Polygon newPol = PolygonUtils.dilate(mask.getContour(), 1);
 			command.setNewContour(mask.getUUID(), newPol);
 			mask.setContour(newPol);
-			consumer.setRois(rois, ind);
+			consumer.setRois(rois);
 		}
+		consumer.setSelected(mask);
 		this.commandCallback.accept(command);
 	}
 	
@@ -234,15 +240,17 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 			return;
 		int[] indices = list.getSelectedIndices();
 		ModifyRoiCommand command = new ModifyRoiCommand(this, rois);
+		Mask mask = null;
 		for (int ind : indices) {
-			Mask mask = rois.get(ind);
+			mask = rois.get(ind);
 			command.setOldContour(mask.getUUID(), mask.getContour());
-			Polygon newPol = PolygonUtils.dilate(mask.getContour(), 1);
+			Polygon newPol = PolygonUtils.erode(mask.getContour(), 1);
 			command.setNewContour(mask.getUUID(), newPol);
 			mask.setContour(newPol);
-			consumer.setRois(rois, ind);
+			consumer.setRois(rois);
 		}
-		this.commandCallback.accept(command);
+		commandCallback.accept(command);
+		consumer.setSelected(mask);
 	}
 	
 	private void exportMask() {

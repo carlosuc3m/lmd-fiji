@@ -437,8 +437,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 			this.activationBtn.setSelected(false);
 			this.activationLabel.setText(ACTIVATE_TO_SEGMENT);
 			wasActive = false;
-		} else if (e.getSource().equals(imp.getCanvas()))
-				roiManager.updateShowAll();
+		}
 	}
 
 	@Override

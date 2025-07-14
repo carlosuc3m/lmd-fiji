@@ -6,9 +6,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
-
+import java.util.function.Consumer;
 
 import ai.nets.samj.annotation.Mask;
 import ij.ImagePlus;
@@ -34,6 +35,8 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener {
 	private List<Roi> roiList;
 	
 	private BiConsumer<Integer,Polygon> modifyRoiCallback;
+	
+	private Consumer<Integer> selectedCallback;
 	
 	public RoiManagerIJ() {
 		Roi.addRoiListener(this);
@@ -165,11 +168,36 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener {
 		}
 		modRoi = null;
 	}
+	
+	private void findSelectedRoi() {
+		Roi roi = imp.getRoi();
+		if (roi == null || roi.getName() == null || !(roi instanceof PolygonRoi))
+			return;
+		PolygonRoi polRoi = (PolygonRoi) roi;
+		int ind = -1;
+		for (Roi roi2 : roiList) {
+			ind ++;
+			if (!(roi2 instanceof PolygonRoi))
+				continue;
+			PolygonRoi m = (PolygonRoi) roi2;
+			if (!Arrays.equals(polRoi.getXCoordinates(), m.getXCoordinates())
+					|| !Arrays.equals(polRoi.getYCoordinates(), m.getYCoordinates()))
+				continue;
+			this.selectedCallback.accept(ind);
+			return;
+		}
+	}
 
 	@Override
 	public void roiModified(ImagePlus imp, int id) {
 		if (imp == null || !imp.equals(this.imp))
 			return;
+		if (id == RoiListener.CREATED && imp.getRoi().getName() == null) {
+			return;
+		} else if (id == RoiListener.CREATED) {
+			findSelectedRoi();
+			return;
+		}
 		if (id != RoiListener.MODIFIED && id != RoiListener.MOVED)
 			return;
 		if (!isDragging)
@@ -183,6 +211,12 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener {
 	@Override
 	public void setModifyRoiCallback(BiConsumer<Integer,Polygon> modifyRoiCallback) {
 		this.modifyRoiCallback = modifyRoiCallback;
+		
+	}
+
+	@Override
+	public void setSelectedCallback(Consumer<Integer> selectedCallback) {
+		this.selectedCallback = selectedCallback;
 		
 	}
 }
