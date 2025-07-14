@@ -71,6 +71,5 @@ public class ModifyRoiCommand implements Command {
 				m.setContour(modsMap.get(m.getUUID()).get(OLD_KEY));
 			this.roiManager.addRoi(m);
 		}
-		this.roiManager.updateShowAll();
 	}
 }

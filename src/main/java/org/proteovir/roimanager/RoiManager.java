@@ -11,7 +11,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -100,52 +99,50 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 	}
 
 	public void addRoi(Mask roi) {
-		listModel.addElement(roi.getName());
 		rois.add(roi);
 		updateShowAll();
 	}
 
 	public void deleteAll() {
-		this.commandCallback.accept(new DeleteRoiCommand(this, rois));
 		rois.clear();
 		listModel.removeAllElements();
 		updateShowAll();
 	}
 
-	/** Deletes the ROI at 'index' and updates the display. */
-	public void delete(int index) {
-		int count = this.getROIsNumber();
-		if (count==0 || index>=count)
-			return;
-
-		this.commandCallback.accept(new DeleteRoiCommand(this, Arrays.asList(new Mask[] {rois.get(index)})));
-		rois.remove(index);
-		listModel.remove(index);
-		updateShowAll();
+	private void deleteAllBtn() {
+		this.commandCallback.accept(new DeleteRoiCommand(this, rois));
+		deleteAll();
 	}
 
 	/** Deletes the ROI at 'index' and updates the display. */
-	public void delete(int[] indeces) {
+	public List<Mask> delete(int... indeces) {
 		int count = this.getROIsNumber();
 		List<Mask> deleted = new ArrayList<Mask>();
 		for (int i = indeces.length - 1; i >= 0; i --) {
 			int index = indeces[i];
-			if (count == 0 || index >= count)
+			if (count == 0 || index >= count || index < 0)
 				continue;
 			deleted.add(rois.get(index));
 			rois.remove(index);
 			listModel.remove(index);
 		}
-		this.commandCallback.accept(new DeleteRoiCommand(this, deleted));
 		updateShowAll();
+		return deleted;
+	}
+
+	/** Deletes the ROI at 'index' and updates the display. */
+	private void deleteBtn(int... indeces) {
+		this.commandCallback.accept(new DeleteRoiCommand(this, delete(indeces)));
 	}
 
 	public void updateShowAll() {
+		listModel.removeAllElements();;
 		if (showAllCheckbox.isSelected())
 			consumer.setRois(rois);
 		else
 			consumer.deleteAllRois();
 		consumer.setSelected(null);
+		rois.stream().forEach(rr -> listModel.addElement(rr.getName()));
 	}
 	
 	private void addRoiFromGUI() {
@@ -262,11 +259,11 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 		else if (command.equals("Simplify"))
 			simplify();
 		else if (command.equals("Delete") && list.getSelectedIndex() != -1 && list.getSelectedIndices().length == 1)
-			delete(list.getSelectedIndex());
+			deleteBtn(list.getSelectedIndex());
 		else if (command.equals("Delete") && list.getSelectedIndex() != -1 && list.getSelectedIndices().length != 1)
-			delete(list.getSelectedIndices());
+			deleteBtn(list.getSelectedIndices());
 		else if (command.equals("Delete") && list.getSelectedIndex() == -1 && justClickedDelete)
-			deleteAll();
+			deleteAllBtn();
 		else if (command.equals("Delete") && list.getSelectedIndex() == -1) {
 			justClickedDelete = true;
 			return;
