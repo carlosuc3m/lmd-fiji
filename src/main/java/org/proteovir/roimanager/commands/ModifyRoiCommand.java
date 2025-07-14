@@ -51,25 +51,35 @@ public class ModifyRoiCommand implements Command {
 	@Override
 	public void execute() {
 		int n = polys.size();
+		Mask modMask = null;
 		for (int i = n - 1; i >= 0; i --) {
 			Mask m = polys.get(i);
 			if (modsMap.get(m.getUUID()) == null)
 				continue;
 			if (modsMap.get(m.getUUID()).get(NEW_KEY) == null)
 				roiManager.delete(i);
-			else
+			else {
 				roiManager.getRoisAsArray()[i].setContour(modsMap.get(m.getUUID()).get(NEW_KEY));
+				modMask = roiManager.getRoisAsArray()[i];
+			}
 		}
 		this.roiManager.updateShowAll();
+		if (modsMap.keySet().size() == 1)
+			this.roiManager.select(modMask);
 	}
   
 	@Override
 	public void undo() {
 		this.roiManager.deleteAll();
+		Mask modMask = null;
 		for (Mask m : polys) {
-			if (modsMap.get(m.getUUID()) != null)
+			if (modsMap.get(m.getUUID()) != null) {
 				m.setContour(modsMap.get(m.getUUID()).get(OLD_KEY));
+				modMask = m;
+			}
 			this.roiManager.addRoi(m);
 		}
+		if (modsMap.keySet().size() == 1)
+			this.roiManager.select(modMask);
 	}
 }

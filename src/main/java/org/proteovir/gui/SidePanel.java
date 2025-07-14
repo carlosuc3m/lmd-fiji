@@ -28,6 +28,7 @@ import org.proteovir.metadata.ImageDataXMLGenerator;
 import org.proteovir.roimanager.RoiManagerConsumer;
 import org.proteovir.roimanager.commands.AddRoiCommand;
 import org.proteovir.roimanager.commands.Command;
+import org.proteovir.roimanager.commands.DeleteRoiCommand;
 
 import ai.nets.samj.annotation.Mask;
 import ai.nets.samj.communication.model.SAM2Tiny;
@@ -166,7 +167,10 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 
 		roiManager.getList().addMouseListener(this);
 		roiManager.setExportLMDcallback((masks) -> exportLMDFormat(masks));
-		roiManager.addCommandCallback((cmd) -> annotatedMask.add(cmd));
+		roiManager.addCommandCallback((cmd) -> {
+			redoAnnotatedMask.clear();
+			annotatedMask.add(cmd);
+		});
 		cellposeBtn.addActionListener(this);
 		samjBtn.addActionListener(this);
 		activationBtn.addActionListener(this);
@@ -323,8 +327,11 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	}
 	
 	void addToRoiManager(final List<Mask> polys, final String promptShape) {
-		if (this.roiManager.getROIsNumber() == 0 && annotatedMask.size() != 0)
+		if (this.roiManager.getROIsNumber() == 0 && annotatedMask.size() != 0 
+				&& !(annotatedMask.peek() instanceof DeleteRoiCommand)) {
 			annotatedMask.clear();
+			roiManager.deleteAll();
+		}
 			
 		this.redoAnnotatedMask.clear();
 		promptsCreatedCnt++;

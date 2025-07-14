@@ -280,6 +280,14 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 		
 		justClickedDelete = false;
 	}
+	
+	public void select(int ind) {
+		consumer.setSelected(this.rois.get(ind));
+	}
+	
+	public void select(Mask mm) {
+		consumer.setSelected(mm);
+	}
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
