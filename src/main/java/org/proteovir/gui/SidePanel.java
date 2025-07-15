@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
@@ -24,6 +25,7 @@ import java.util.function.Function;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import org.proteovir.cellpose.LMDCellpose;
 import org.proteovir.metadata.ImageDataXMLGenerator;
 import org.proteovir.roimanager.RoiManagerConsumer;
 import org.proteovir.roimanager.commands.AddRoiCommand;
@@ -42,6 +44,8 @@ import ij.WindowManager;
 import ij.gui.Roi;
 import ij.gui.Toolbar;
 import ij.plugin.CompositeConverter;
+import io.bioimage.modelrunner.exceptions.LoadModelException;
+import io.bioimage.modelrunner.exceptions.RunModelException;
 import io.bioimage.modelrunner.system.PlatformDetection;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
@@ -60,6 +64,8 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
     private boolean alreadyFocused = false;
     
     private SAM2Tiny samj;
+    
+    private LMDCellpose cellpose;
     
     /**
 	 * Counter of the ROIs created
@@ -236,6 +242,27 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 				} catch (IOException | InterruptedException | RuntimeException e1) {
 					e1.printStackTrace();
 					guiAfterEnconding(false);
+				}
+				
+			}).start();
+		} else if (e.getSource() == cellposeBtn) {
+			new Thread(() -> {
+				SwingUtilities.invokeLater(() -> blockToCellpose(true));
+				SwingUtilities.invokeLater(() -> activationLabel.setText(RUNNING_CELLPOSE));
+				try {
+					if (cellpose == null || !cellpose.isLoaded())
+						cellpose = LMDCellpose.create();
+					boolean isColorRGB = imp.getType() == ImagePlus.COLOR_RGB;
+					Img<?> image = ImageJFunctions.wrap(isColorRGB ? CompositeConverter.makeComposite(imp) : imp);
+					if (!cellpose.isLoaded())
+						cellpose.loadModel();
+					List<Mask> masks = cellpose.inferenceContours(Cast.unchecked(Collections.singletonList(image)));
+					roiManager.setImage(imp);
+					guiAfterCellpose(true, samj);
+					masks.stream().forEach(mm -> roiManager.addRoi(mm));
+				} catch (IOException | InterruptedException | RuntimeException | LoadModelException | RunModelException e1) {
+					e1.printStackTrace();
+					guiAfterCellpose(false, samj);
 				}
 				
 			}).start();

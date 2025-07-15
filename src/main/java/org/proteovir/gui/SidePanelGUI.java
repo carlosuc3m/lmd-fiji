@@ -10,6 +10,9 @@ import javax.swing.SwingUtilities;
 import org.proteovir.gui.components.ColoredButton;
 import org.proteovir.roimanager.RoiManagerConsumer;
 import org.proteovir.roimanager.RoiManagerIJ;
+
+import ai.nets.samj.communication.model.SAMModel;
+
 import org.proteovir.roimanager.RoiManager;
 
 import ij.gui.Toolbar;
@@ -88,6 +91,16 @@ public class SidePanelGUI extends JPanel {
     protected static final String ERROR_ENCODING = ""
     		+ "<html>"
     		+ "<span style=\"color: red;\">&#9888; Error running SAMJ</span>"
+    		+ "</html>";
+    
+    protected static final String RUNNING_CELLPOSE = ""
+    		+ "<html>"
+    		+ "<span style=\"color: gray;\">Running CellPose...</span>"
+    		+ "</html>";
+    
+    protected static final String ERROR_CELLPOSE = ""
+    		+ "<html>"
+    		+ "<span style=\"color: red;\">&#9888; Error running CellPose</span>"
     		+ "</html>";
     
     
@@ -215,8 +228,24 @@ public class SidePanelGUI extends JPanel {
 	
 	protected void blockToEncode(boolean block) {
 		this.samjBtn.setLoading(block);
-		
+
 		this.samjBtn.setEnabled(!block);
+		this.cellposeBtn.setEnabled(!block);
+		this.activationBtn.setEnabled(!block);
+		
+		this.firstCalibration.block(block);
+		this.secondCalibration.block(block);
+		this.thirdCalibration.block(block);
+		
+		this.imageGUI.block(block);
+		this.roiManager.block(block);
+	}
+	
+	protected void blockToCellpose(boolean block) {
+		this.cellposeBtn.setLoading(block);
+
+		this.samjBtn.setEnabled(!block);
+		this.cellposeBtn.setEnabled(!block);
 		this.activationBtn.setEnabled(!block);
 		
 		this.firstCalibration.block(block);
@@ -262,6 +291,18 @@ public class SidePanelGUI extends JPanel {
 				activationBtn.setEnabled(false);
 				activationLabel.setText(LOST_FOCUS);
 				wasActive = false;
+			}
+		});
+	}
+	
+	protected void guiAfterCellpose(boolean success, SAMModel samj) {
+		SwingUtilities.invokeLater(() -> {
+			blockToEncode(false);
+			roiManager.block(!success && (samj == null || !samj.isLoaded()));
+			cellposeBtn.setEnabled(true);
+			cellposeBtn.setSelected(false);
+			if (!success) {
+				activationLabel.setText(ERROR_CELLPOSE);
 			}
 		});
 	}
