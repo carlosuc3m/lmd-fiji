@@ -33,12 +33,14 @@ public class LMDCellpose extends Cellpose {
 	public static final String IMPORTS = ""
 			+ "task.update('start')" + System.lineSeparator()
 			+ "import numpy as np" + System.lineSeparator()
+			+ "import torch" + System.lineSeparator()
 			+ "from skimage import measure" + System.lineSeparator()
 			+ "measure.label(np.ones((10, 10)), connectivity=1)" + System.lineSeparator()
 			+ "from scipy.ndimage import binary_fill_holes" + System.lineSeparator()
 			+ "from scipy.ndimage import label" + System.lineSeparator()
 			+ "globals()['measure'] = measure" + System.lineSeparator()
 			+ "globals()['label'] = label" + System.lineSeparator()
+			+ "globals()['torch'] = torch" + System.lineSeparator()
 			+ "globals()['np'] = np" + System.lineSeparator()
 			+ "globals()['binary_fill_holes'] = binary_fill_holes" + System.lineSeparator();
 
@@ -121,27 +123,33 @@ public class LMDCellpose extends Cellpose {
 		return masks;
 	}
 	
-	protected <T extends RealType<T> & NativeType<T>> String createInputsCode(List<RandomAccessibleInterval<T>> rais, List<String> names) {
+	protected <T extends RealType<T> & NativeType<T>> String createInputsCode(List<RandomAccessibleInterval<T>> inRais, List<String> names) {
 		String code = "created_shms = []" + System.lineSeparator();
 		code += "try:" + System.lineSeparator();
-		for (int i = 0; i < rais.size(); i ++) {
-			SharedMemoryArray shma = SharedMemoryArray.createSHMAFromRAI(rais.get(i), false, false);
+		for (int i = 0; i < inRais.size(); i ++) {
+			SharedMemoryArray shma = SharedMemoryArray.createSHMAFromRAI(inRais.get(i), false, false);
 			code += codeToConvertShmaToPython(shma, names.get(i));
 			inShmaList.add(shma);
 		}
-		code += "  " + MODEL_VAR_NAME + ".eval()" + System.lineSeparator();
+		String nameList = "[";
+		String channelList = "[";
+		for (int i = 0; i < inRais.size(); i ++) {
+			nameList += names.get(i) + ", ";
+			channelList += createChannelsArgCode(inRais.get(i)) + ", ";
+		}
+		nameList += "]";
+		channelList += "]";
+		code += createDiamCode(nameList, channelList);
 		code += "  with torch.no_grad():" + System.lineSeparator();
-		code += "    " + OUTPUT_LIST_KEY + " = " + MODEL_VAR_NAME + "(";
-		for (int i = 0; i < rais.size(); i ++)
-			code += "torch.from_numpy(" + names.get(i) + ").to(device), ";
-		code = code.substring(0, code.length() - 2);
-		code += ")" + System.lineSeparator();
+		code += "    " + OUTPUT_LIST_KEY + " = " + MODEL_VAR_NAME + ".eval(" + nameList + ", channels=" + channelList + ", ";
+		code += "diameter=diameter)" + System.lineSeparator();
 		code += ""
-				+ "contours_x, contours_y, rle_masks = get_polygons_from_binary_mask(" + OUTPUT_LIST_KEY + "[0], only_biggest=False)" + System.lineSeparator()
-				+ "task.update('all contours traced')" + System.lineSeparator()
-				+ "task.outputs['contours_x'] = contours_x" + System.lineSeparator()
-				+ "task.outputs['contours_y'] = contours_y" + System.lineSeparator()
-				+ "task.outputs['rle'] = rle_masks" + System.lineSeparator();
+				+ "  print(diameter)" + System.lineSeparator()
+				+ "  contours_x, contours_y, rle_masks = get_polygons_from_binary_mask(" + OUTPUT_LIST_KEY + "[0][0], only_biggest=False)" + System.lineSeparator()
+				+ "  task.update('all contours traced')" + System.lineSeparator()
+				+ "  task.outputs['contours_x'] = contours_x" + System.lineSeparator()
+				+ "  task.outputs['contours_y'] = contours_y" + System.lineSeparator()
+				+ "  task.outputs['rle'] = rle_masks" + System.lineSeparator();
 		String closeEverythingWin = closeSHMWin();
 		code += "  " + closeEverythingWin + System.lineSeparator();
 		code += "except Exception as e:" + System.lineSeparator();

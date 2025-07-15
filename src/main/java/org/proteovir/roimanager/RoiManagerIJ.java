@@ -43,6 +43,8 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener {
 	}
 	
 	public void setImage(Object imp) {
+		if (imp.equals(this.imp))
+			return;
 		this.imp = (ImagePlus) imp;
 		this.imp.getCanvas().addMouseMotionListener(new MouseMotionListener() {
 

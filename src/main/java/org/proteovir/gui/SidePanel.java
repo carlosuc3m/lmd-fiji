@@ -47,10 +47,12 @@ import ij.plugin.CompositeConverter;
 import io.bioimage.modelrunner.exceptions.LoadModelException;
 import io.bioimage.modelrunner.exceptions.RunModelException;
 import io.bioimage.modelrunner.system.PlatformDetection;
+import io.bioimage.modelrunner.tensor.Utils;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.Point;
+import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.util.Cast;
@@ -254,13 +256,14 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 					if (cellpose == null || !cellpose.isLoaded())
 						cellpose = LMDCellpose.create();
 					boolean isColorRGB = imp.getType() == ImagePlus.COLOR_RGB;
-					Img<?> image = ImageJFunctions.wrap(isColorRGB ? CompositeConverter.makeComposite(imp) : imp);
+					RandomAccessibleInterval<?> image = ImageJFunctions.wrap(isColorRGB ? CompositeConverter.makeComposite(imp) : imp);
+					image = Utils.rearangeAxes(Cast.unchecked(image), new int[] {1, 0});
 					if (!cellpose.isLoaded())
 						cellpose.loadModel();
 					List<Mask> masks = cellpose.inferenceContours(Cast.unchecked(Collections.singletonList(image)));
 					roiManager.setImage(imp);
 					guiAfterCellpose(true, samj);
-					masks.stream().forEach(mm -> roiManager.addRoi(mm));
+					addToRoiManager(masks, "seg", "cellpose");
 				} catch (IOException | InterruptedException | RuntimeException | LoadModelException | RunModelException e1) {
 					e1.printStackTrace();
 					guiAfterCellpose(false, samj);
@@ -302,7 +305,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	
 	private void submitRectPrompt(Interval rectInterval) {
 		try {
-			addToRoiManager(this.samj.fetch2dSegmentation(rectInterval), "rect");
+			addToRoiManager(this.samj.fetch2dSegmentation(rectInterval), "rect", samj.getName());
 		} catch (Exception ex) {
 			ex.printStackTrace();;
 		}
@@ -343,10 +346,10 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 			if (imp.getWidth() * imp.getHeight() > Math.pow(AbstractSamJ.MAX_ENCODED_AREA_RS, 2)
 					|| imp.getWidth() > AbstractSamJ.MAX_ENCODED_SIDE || imp.getHeight() > AbstractSamJ.MAX_ENCODED_SIDE)
 				addToRoiManager(samj.fetch2dSegmentation(collectedPoints, collecteNegPoints, zoomedRectangle),
-						(collectedPoints.size() > 1 ? "points" : "point"));
+						(collectedPoints.size() > 1 ? "points" : "point"), samj.getName());
 			else
 				addToRoiManager(samj.fetch2dSegmentation(collectedPoints, collecteNegPoints),
-						(collectedPoints.size() > 1 ? "points" : "point"));
+						(collectedPoints.size() > 1 ? "points" : "point"), samj.getName());
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -354,7 +357,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		collecteNegPoints = new ArrayList<Localizable>();
 	}
 	
-	void addToRoiManager(final List<Mask> polys, final String promptShape) {
+	void addToRoiManager(final List<Mask> polys, final String promptShape, String modelName) {
 		if (this.roiManager.getROIsNumber() == 0 && annotatedMask.size() != 0 
 				&& !(annotatedMask.peek() instanceof DeleteRoiCommand)) {
 			annotatedMask.clear();
@@ -366,7 +369,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		int resNo = 1;
 		List<Mask> masks = new ArrayList<Mask>();
 		for (Mask m : polys) {
-			m.setName(promptsCreatedCnt + "." + (resNo ++) + "_"+promptShape + "_" + this.samj.getName());
+			m.setName(promptsCreatedCnt + "." + (resNo ++) + "_"+promptShape + "_" + modelName);
 			masks.add(m);
 		}
 		Command command = new AddRoiCommand(roiManager, masks);

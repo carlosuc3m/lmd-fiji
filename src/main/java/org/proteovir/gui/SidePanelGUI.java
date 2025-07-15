@@ -297,7 +297,7 @@ public class SidePanelGUI extends JPanel {
 	
 	protected void guiAfterCellpose(boolean success, SAMModel samj) {
 		SwingUtilities.invokeLater(() -> {
-			blockToEncode(false);
+			blockToCellpose(false);
 			roiManager.block(!success && (samj == null || !samj.isLoaded()));
 			cellposeBtn.setEnabled(true);
 			cellposeBtn.setSelected(false);
