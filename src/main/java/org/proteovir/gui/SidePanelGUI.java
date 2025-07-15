@@ -127,6 +127,7 @@ public class SidePanelGUI extends JPanel {
 	public SidePanelGUI(RoiManagerConsumer consumer) {
 		if (consumer == null)
 			consumer = new RoiManagerIJ();
+		setFocusable(true);
 		
 		statusLabel = new JLabel(NOT_CALIBRATED);
 		statusLabel.setHorizontalAlignment(SwingConstants.CENTER);

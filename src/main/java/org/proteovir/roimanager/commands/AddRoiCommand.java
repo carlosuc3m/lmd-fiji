@@ -24,7 +24,6 @@ public class AddRoiCommand implements Command {
 	public void execute() {
 		for (Mask m : polys)
 			this.roiManager.addRoi(m);
-		this.roiManager.updateShowAll();
 	}
   
 	@Override

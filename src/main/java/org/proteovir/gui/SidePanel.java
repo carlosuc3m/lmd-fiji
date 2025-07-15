@@ -121,7 +121,10 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	        imp.show();
 	        imp.getCanvas().addMouseListener(SidePanel.this);
 	        imp.getCanvas().addKeyListener(SidePanel.this);
+	        imp.getWindow().addKeyListener(SidePanel.this);
 			imp.getCanvas().removeKeyListener(IJ.getInstance());
+			imp.getWindow().removeKeyListener(IJ.getInstance());
+	        
 	        imp.getWindow().addWindowFocusListener(new WindowFocusListener() {
 	            @Override
 	            public void windowGainedFocus(WindowEvent e) {
@@ -180,6 +183,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 			redoAnnotatedMask.clear();
 			annotatedMask.add(cmd);
 		});
+		this.addKeyListener(this);
 		cellposeBtn.addActionListener(this);
 		samjBtn.addActionListener(this);
 		activationBtn.addActionListener(this);
@@ -489,15 +493,21 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 
 	@Override
 	public void keyReleased(KeyEvent e) {
-		if ((e.getKeyCode() == KeyEvent.VK_CONTROL && !PlatformDetection.isMacOS()) 
-				|| (e.getKeyCode() == KeyEvent.VK_META && PlatformDetection.isMacOS())) {
+		if (this.isCollectingPoints 
+				&& ((e.getKeyCode() == KeyEvent.VK_CONTROL && !PlatformDetection.isMacOS())
+						|| (e.getKeyCode() == KeyEvent.VK_META && PlatformDetection.isMacOS()))) {
+			e.consume();
+			IJ.setKeyUp(!PlatformDetection.isMacOS() ? KeyEvent.VK_CONTROL : KeyEvent.VK_META);
 			submitAndClearPoints();
+			imp.deleteRoi();
 		}
 	    if (e.getKeyCode() == KeyEvent.VK_Z) {
 	        redoPressed = false;
+			e.consume();
 	    }
 	    if (e.getKeyCode() == KeyEvent.VK_Y) {
 	        undoPressed = false;
+			e.consume();
 	    }
 	}
 	
