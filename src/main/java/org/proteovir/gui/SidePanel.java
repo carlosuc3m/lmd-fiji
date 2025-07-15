@@ -129,6 +129,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	            public void windowLostFocus(WindowEvent e) {
 	            }
 	        });
+	        roiManager.deleteAll();
 	        imp.getWindow().requestFocus();
 	        return true;
 	    } catch (Exception ex) {
