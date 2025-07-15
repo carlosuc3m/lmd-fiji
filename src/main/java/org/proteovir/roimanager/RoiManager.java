@@ -168,6 +168,7 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 		}
 		consumer.setSelected(mask);
 		this.commandCallback.accept(command);
+		list.setSelectedIndices(indices);
 	}
 	
 	private void complicate() {
@@ -185,6 +186,7 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 		}
 		consumer.setSelected(mask);
 		this.commandCallback.accept(command);
+		list.setSelectedIndices(indices);
 	}
 	
 	private void merge() {
@@ -233,6 +235,7 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 		}
 		consumer.setSelected(mask);
 		this.commandCallback.accept(command);
+		list.setSelectedIndices(indices);
 	}
 	
 	private void erode() {
@@ -251,6 +254,7 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 		}
 		commandCallback.accept(command);
 		consumer.setSelected(mask);
+		list.setSelectedIndices(indices);
 	}
 	
 	private void exportMask() {

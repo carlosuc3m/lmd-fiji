@@ -112,6 +112,8 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener {
 
 	@Override
 	public void setSelected(Mask mm) {
+		if (mm == null && imp == null)
+			return;
 		if (mm == null) {
 			imp.deleteRoi();
 			return;
