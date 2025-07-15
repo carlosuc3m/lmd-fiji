@@ -331,6 +331,7 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
 	        	if (e.getDocument().equals(imagePath.getDocument()) && calibrationPoint != null
 	        			&& (calImage == null || !calImage.equals(str))) {
 	        		calibrationPoint = null;
+	        		meta = null;
 	        		setInfoState(false);
 	        	}
 			} catch (BadLocationException e1) {
