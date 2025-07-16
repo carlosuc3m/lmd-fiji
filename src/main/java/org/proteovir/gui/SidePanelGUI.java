@@ -8,6 +8,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import org.proteovir.gui.components.ColoredButton;
+import org.proteovir.gui.components.IntegerTextField;
 import org.proteovir.roimanager.RoiManagerConsumer;
 import org.proteovir.roimanager.RoiManagerIJ;
 
@@ -34,6 +35,10 @@ public class SidePanelGUI extends JPanel {
     protected ImageGUI imageGUI;
     
     protected ColoredButton cellposeBtn;
+    
+    protected JLabel diameterLabel;
+    
+    protected IntegerTextField diameterVal;
     
     protected ColoredButton samjBtn;
     
@@ -157,6 +162,10 @@ public class SidePanelGUI extends JPanel {
 
 		cellposeBtn = new ColoredButton("CELLPOSE", new Color(150, 255, 150), Color.LIGHT_GRAY,
 				new Color(190, 255, 190), new Color(220, 220, 220));
+		diameterLabel = new JLabel("Cell diameter");
+		statusLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		statusLabel.setVerticalAlignment(SwingConstants.CENTER);
+		diameterVal = new IntegerTextField("Optional (only integers)");
 		samjBtn = new ColoredButton("SAMJ", new Color(150, 255, 150), Color.LIGHT_GRAY,
 				new Color(190, 255, 190), new Color(220, 220, 220));
 		activationBtn =  new ColoredButton("Activate", new Color(150, 255, 150), Color.LIGHT_GRAY,
@@ -174,6 +183,8 @@ public class SidePanelGUI extends JPanel {
 		add(thirdCalibration);
 		add(imageGUI);
 		add(cellposeBtn);
+		add(diameterLabel);
+		add(diameterVal);
 		add(samjBtn);
 		add(activationBtn);
 		add(activationLabel);
@@ -232,6 +243,8 @@ public class SidePanelGUI extends JPanel {
 
 		this.samjBtn.setEnabled(!block);
 		this.cellposeBtn.setEnabled(!block);
+		this.diameterLabel.setEnabled(!block);
+		this.diameterVal.setEnabled(!block);
 		this.activationBtn.setEnabled(!block);
 		
 		this.firstCalibration.block(block);
@@ -247,6 +260,8 @@ public class SidePanelGUI extends JPanel {
 
 		this.samjBtn.setEnabled(!block);
 		this.cellposeBtn.setEnabled(!block);
+		this.diameterLabel.setEnabled(!block);
+		this.diameterVal.setEnabled(!block);
 		this.activationBtn.setEnabled(!block);
 		
 		this.firstCalibration.block(block);
@@ -300,8 +315,10 @@ public class SidePanelGUI extends JPanel {
 		SwingUtilities.invokeLater(() -> {
 			blockToCellpose(false);
 			roiManager.block(!success && (samj == null || !samj.isLoaded()));
-			cellposeBtn.setEnabled(true);
+			cellposeBtn.setEnabled(success);
 			cellposeBtn.setSelected(false);
+			diameterLabel.setEnabled(success);
+			diameterVal.setEnabled(success);
 			if (!success) {
 				activationLabel.setText(ERROR_CELLPOSE);
 			}
