@@ -125,6 +125,8 @@ public class LMDCellpose extends Cellpose {
 	
 	protected <T extends RealType<T> & NativeType<T>> String createInputsCode(List<RandomAccessibleInterval<T>> inRais, List<String> names) {
 		String code = "created_shms = []" + System.lineSeparator();
+		code += setDiameterCode + System.lineSeparator();
+		setDiameterCode = "";
 		code += "try:" + System.lineSeparator();
 		for (int i = 0; i < inRais.size(); i ++) {
 			SharedMemoryArray shma = SharedMemoryArray.createSHMAFromRAI(inRais.get(i), false, false);

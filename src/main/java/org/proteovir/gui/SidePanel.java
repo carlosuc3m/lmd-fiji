@@ -267,6 +267,8 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 					image = Utils.rearangeAxes(Cast.unchecked(image), new int[] {1, 0});
 					if (!cellpose.isLoaded())
 						cellpose.loadModel();
+					if (diameterVal.getText() != null && !diameterVal.getText().equals(""))
+						cellpose.setDiameter(Integer.parseInt(diameterVal.getText()));
 					List<Mask> masks = cellpose.inferenceContours(Cast.unchecked(Collections.singletonList(image)));
 					roiManager.setImage(imp);
 					guiAfterCellpose(true, samj);
