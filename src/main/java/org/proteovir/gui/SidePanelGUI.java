@@ -80,7 +80,7 @@ public class SidePanelGUI extends JPanel {
     
     protected static final String SAMJ = ""
     		+ "<html>"
-    		+ "<span style=\"color: blue;\">Click on SAMJ to start</span>"
+    		+ "<span style=\"color: blue;\">Click on CELLPOSE or SAMJ to start</span>"
     		+ "</html>";
     
     protected static final String READY = ""
