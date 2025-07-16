@@ -121,6 +121,8 @@ public class SidePanelGUI extends JPanel {
     
     private static final double CELLPOSE_BUTON_H_RATIO = 0.05d;
     
+    private static final double CELLPOSE_BUTON_W_RATIO = 0.5d;
+    
     private static final double ACTIVATION_BUTON_H_RATIO = 0.035d;
     
     private static final double ACTIVATION_LABEL_H_RATIO = 0.025d;
@@ -163,8 +165,8 @@ public class SidePanelGUI extends JPanel {
 		cellposeBtn = new ColoredButton("CELLPOSE", new Color(150, 255, 150), Color.LIGHT_GRAY,
 				new Color(190, 255, 190), new Color(220, 220, 220));
 		diameterLabel = new JLabel("Cell diameter");
-		statusLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		statusLabel.setVerticalAlignment(SwingConstants.CENTER);
+		diameterLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		diameterLabel.setVerticalAlignment(SwingConstants.CENTER);
 		diameterVal = new IntegerTextField("Optional (only integers)");
 		samjBtn = new ColoredButton("SAMJ", new Color(150, 255, 150), Color.LIGHT_GRAY,
 				new Color(190, 255, 190), new Color(220, 220, 220));
@@ -201,6 +203,7 @@ public class SidePanelGUI extends JPanel {
         int calH = Math.max(inset, (int) (rawH * CAL_PANEL_H_RATIO));
         int imH = Math.max(inset, (int) (rawH * IMAGE_PANEL_H_RATIO));
         int cellposeH = Math.max(inset, (int) (rawH * CELLPOSE_BUTON_H_RATIO));
+        int cellposeW = Math.max(inset, (int) (rawW * CELLPOSE_BUTON_W_RATIO));
         int samjH = Math.max(inset, (int) (rawH * SAMJ_BUTON_H_RATIO));
         int actH = Math.max(inset, (int) (rawH * ACTIVATION_BUTON_H_RATIO));
         int actLabelH = Math.max(inset, (int) (rawH * ACTIVATION_LABEL_H_RATIO));
@@ -218,7 +221,10 @@ public class SidePanelGUI extends JPanel {
         y = statusH + calH * 3;
         imageGUI.setBounds(inset, y, w, imH - inset);
         y = statusH + calH * 3 + imH;
-        cellposeBtn.setBounds(inset, y, w, cellposeH - inset);
+        int diameterW = Math.max(inset, (w - cellposeW) / 2 - inset * 2);
+        cellposeBtn.setBounds(diameterW + inset, y, cellposeW, cellposeH - inset);
+        diameterLabel.setBounds(diameterW + cellposeW + 2 * inset * 2, y, diameterW, (cellposeH - inset) / 2);
+        diameterVal.setBounds(diameterW + cellposeW + 2 * inset * 2, y + (cellposeH - inset) / 2, diameterW, (cellposeH - inset) / 2);
         y = statusH + calH * 3 + imH + cellposeH;
         samjBtn.setBounds(inset, y, w, samjH - inset);
         y = statusH + calH * 3 + imH + cellposeH + samjH;

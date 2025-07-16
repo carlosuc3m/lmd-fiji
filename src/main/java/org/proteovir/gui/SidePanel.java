@@ -151,6 +151,9 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		wasActive = false;
 		activationBtn.setSelected(false);
 		activationBtn.setEnabled(false);
+		cellposeBtn.setEnabled(false);
+		diameterLabel.setEnabled(false);
+		diameterVal.setEnabled(false);
 		samjBtn.setEnabled(false);
 		samjBtn.setSelected(false);
 		activationLabel.setText(OPEN_TARGET);
@@ -170,6 +173,8 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	public SidePanel(RoiManagerConsumer consumer) {
 		super(consumer);
 		cellposeBtn.setEnabled(false);
+		diameterLabel.setEnabled(false);
+		diameterVal.setEnabled(false);
 		samjBtn.setEnabled(false);
 		activationBtn.setEnabled(false);
 		
@@ -190,10 +195,6 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		ImagePlus.addImageListener(this);
     	IJ.addEventListener(this);
     }
-
-	public void setOpenImageConsumer(Function<File, Boolean> openIm) {
-		this.imageGUI.setOpenImageCallback(openIm);
-	}
 	
 	private void changeOnFocusGained(ImagePlus imp) {
 		if (alreadyFocused)
@@ -216,6 +217,8 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 			return;
 		} else {
 			cellposeBtn.setEnabled(true);
+			diameterLabel.setEnabled(true);
+			diameterVal.setEnabled(true);
 			samjBtn.setEnabled(true);
 			samjBtn.setSelected(false);
 			activationBtn.setSelected(false);
@@ -455,6 +458,8 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		this.activationBtn.setSelected(false);
 		this.activationBtn.setEnabled(false);
 		this.cellposeBtn.setEnabled(false);
+		this.diameterLabel.setEnabled(false);
+		this.diameterVal.setEnabled(false);
 		this.samjBtn.setEnabled(false);
 		this.samjBtn.setSelected(false);
 		this.imageGUI.imagePath.setText("");
