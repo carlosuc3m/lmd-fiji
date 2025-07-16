@@ -325,8 +325,23 @@ public class SidePanelGUI extends JPanel {
 			cellposeBtn.setSelected(false);
 			diameterLabel.setEnabled(success);
 			diameterVal.setEnabled(success);
+			wasActive = false;
+			activationBtn.setSelected(false);
 			if (!success) {
 				activationLabel.setText(ERROR_CELLPOSE);
+			} else if (samj == null || !samj.isLoaded()) {
+				activationLabel.setText(SAMJ);
+			} else if (activationLabel.getText().equals(LOST_FOCUS)) {
+				activationBtn.setEnabled(false);
+				activationLabel.setText(LOST_FOCUS);
+			} else if (isValidPromptSelected()) {
+				activationLabel.setText(ACTIVATE_TO_SEGMENT);
+			} else if (!isValidPromptSelected()){
+				activationBtn.setEnabled(false);
+				activationLabel.setText(ONLY_PROMPTS);
+			} else {
+				activationBtn.setEnabled(false);
+				activationLabel.setText(LOST_FOCUS);
 			}
 		});
 	}
