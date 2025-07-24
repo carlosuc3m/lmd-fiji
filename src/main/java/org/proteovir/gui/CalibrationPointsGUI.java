@@ -255,7 +255,17 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
         	IJ.error("Unable to find corresponding metadata");
 			return;
 		}
+		String imgName = new File(imgFile).getName().replaceAll("_ch\\d{2}(?=\\.tif$)", "");
+		if (imgName.endsWith(".tiff"))
+			imgName = imgName.replaceAll(".tiff", "");
+		if (imgName.endsWith(".tif"))
+			imgName = imgName.replaceAll(".tif", "");
+		String finalName = imgName;
 		File metaFile = Arrays.stream(metaFolder.listFiles())
+				.filter(ff -> ff.getName().equals(finalName + META_SUFFIX))
+				.findFirst().orElse(null);
+		if (metaFile == null)
+			metaFile = Arrays.stream(metaFolder.listFiles())
 				.filter(ff -> ff.getName().endsWith(META_SUFFIX))
 				.findFirst().orElse(null);
 		if (metaFile == null) {
