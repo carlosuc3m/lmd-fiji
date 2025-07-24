@@ -93,7 +93,7 @@
 		<dependency>
 		  <groupId>io.bioimage</groupId>
 		  <artifactId>dl-modelrunner</artifactId>
-		  <version>0.5.11-SNAPSHOT</version>
+		  <version>0.6.1</version>
 		</dependency>
 		<dependency>
 		  <groupId>ai.nets</groupId>
