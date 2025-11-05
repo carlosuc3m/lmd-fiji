@@ -301,8 +301,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 						samj = new SAM2Tiny();
 					boolean isColorRGB = imp.getType() == ImagePlus.COLOR_RGB;
 					Img<?> image = ImageJFunctions.wrap(isColorRGB ? CompositeConverter.makeComposite(imp) : imp);
-					samj.loadModel(LOGGER);
-					samj.setImage(Cast.unchecked(image));
+					samj.setImage(Cast.unchecked(image), LOGGER);
 					samj.setReturnOnlyBiggest(true);
 					roiManager.setImage(imp);
 					guiAfterEnconding(true);
