@@ -157,12 +157,10 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	        return false;
 	    }
 	};
-	
-	private static final String LMD_SUFFIX = "_LMD_ROIS";
-	
 	private Runnable closeSAMJCallback = () -> {
-		if (samj != null && samj.isLoaded())
+		if (samj != null && samj.isLoaded()) {
 			samj.closeProcess();
+		}
 		wasActive = false;
 		activationBtn.setSelected(false);
 		activationBtn.setEnabled(false);
@@ -180,6 +178,9 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	private Consumer<Boolean> activationCallback = (bool) -> {
 		wasActive = bool;
 	};
+	
+	private static final String LMD_SUFFIX = "_LMD_ROIS";
+	
 
 	public SidePanel() {
 		this(null);
@@ -295,8 +296,9 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	}
 
 	public void close() {
-		if (samj != null && samj.isLoaded())
+		if (samj != null && samj.isLoaded()) {
 			samj.closeProcess();
+		}
 	}
 
 	@Override
@@ -571,8 +573,9 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	public void imageClosed(ImagePlus imp) {
 		if (imp == null || !imp.equals(this.imp))
 			return;
-		if (samj != null)
+		if (samj != null) {
 			this.samj.closeProcess();
+		}
 		this.imageGUI.setTargetSet(false);
 		this.activationBtn.setSelected(false);
 		this.activationBtn.setEnabled(false);
@@ -596,30 +599,20 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 			return;
 		int currentSlice = imp.getCurrentSlice() - 1;
 		int currentFrame = imp.getFrame() - 1;
-		if ((currentSlice != slice || currentFrame != frame) && this.samjFrame == currentFrame && this.samjSlice == currentSlice) {
-			this.activationBtn.setSelected(false);
-			this.activationBtn.setEnabled(true);
-			this.samjBtn.setEnabled(false);
-			this.samjBtn.setSelected(true);
-			activationLabel.setText(ACTIVATE_TO_SEGMENT);
-			alreadyFocused = true;
-			imageGUI.setInfoState(false);
-		} else if (slice == samjSlice && frame == samjFrame && (currentSlice != slice || currentFrame != frame)) {
-			this.activationBtn.setSelected(false);
-			this.activationBtn.setEnabled(false);
-			this.samjBtn.setEnabled(true);
-			this.samjBtn.setSelected(false);
-			activationLabel.setText(SAMJ);
-			alreadyFocused = false;
-			imageGUI.setInfoState(true);
-			if (samj != null) {
-				this.samj.closeProcess();
-				samjSlice = -1;
-				samjFrame = -1;
-			}
-		}
+		if (currentSlice == slice && currentFrame == frame)
+			return;
+		
+
 		this.slice = currentSlice;
 		this.frame = currentFrame;
+		
+		this.activationBtn.setSelected(false);
+		this.activationBtn.setEnabled(false);
+		this.samjBtn.setEnabled(true);
+		this.samjBtn.setSelected(false);
+		activationLabel.setText(SAMJ);
+		alreadyFocused = false;
+		imageGUI.setInfoState(true);
 	}
 	
 	@Override
