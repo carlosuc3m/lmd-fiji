@@ -384,17 +384,12 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	}
 	
 	private void submitRectPrompt(Interval rectInterval) {
-		int slice;
-		if (imp.getNSlices() > 1)
-			slice = imp.getCurrentSlice() - 1;
-		else if (imp.getNFrames() > 1)
-			slice = imp.getFrame() - 1;
-		else
-			slice = 0;
+		int slice = imp.getCurrentSlice() - 1;
+		int frame = imp.getFrame() - 1;
 		try {
 			List<ai.nets.samj.annotation.Mask> samjMask = this.samj.fetch2dSegmentation(rectInterval);
 			List<Mask> proteovirMasks = samjMask.stream()
-					.map(mm -> Mask.build(mm.getContour(), mm.rleEncoding, slice))
+					.map(mm -> Mask.build(mm.getContour(), mm.rleEncoding, slice, frame))
 					.collect(Collectors.toList());
 			addToRoiManager(proteovirMasks, "rect", samj.getName());
 		} catch (Exception ex) {
@@ -429,13 +424,8 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		if (this.samj == null) return;
 		if (collectedPoints.size() == 0) return;
 
-		int slice;
-		if (imp.getNSlices() > 1)
-			slice = imp.getCurrentSlice() - 1;
-		else if (imp.getNFrames() > 1)
-			slice = imp.getFrame() - 1;
-		else
-			slice = 0;
+		int slice = imp.getCurrentSlice() - 1;
+		int frame = imp.getFrame() - 1;
 		//TODO log.info("Image window: Processing now points, this count: "+collectedPoints.size());
 		isCollectingPoints = false;
 		imp.deleteRoi();
@@ -445,13 +435,13 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 					|| imp.getWidth() > AbstractSamJ.MAX_ENCODED_SIDE || imp.getHeight() > AbstractSamJ.MAX_ENCODED_SIDE) {
 				List<ai.nets.samj.annotation.Mask> samjMasks = samj.fetch2dSegmentation(collectedPoints, collecteNegPoints, zoomedRectangle);
 				List<Mask> proteovirMasks = samjMasks.stream()
-						.map(mm -> Mask.build(mm.getContour(), mm.rleEncoding, slice))
+						.map(mm -> Mask.build(mm.getContour(), mm.rleEncoding, slice, frame))
 						.collect(Collectors.toList());
 				addToRoiManager(proteovirMasks, (collectedPoints.size() > 1 ? "points" : "point"), samj.getName());
 			} else {
 				List<ai.nets.samj.annotation.Mask> samjMasks = samj.fetch2dSegmentation(collectedPoints, collecteNegPoints);
 				List<Mask> proteovirMasks = samjMasks.stream()
-						.map(mm -> Mask.build(mm.getContour(), mm.rleEncoding, slice))
+						.map(mm -> Mask.build(mm.getContour(), mm.rleEncoding, slice, frame))
 						.collect(Collectors.toList());
 				addToRoiManager(proteovirMasks, (collectedPoints.size() > 1 ? "points" : "point"), samj.getName());
 			}

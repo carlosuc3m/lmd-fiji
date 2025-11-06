@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 
 import org.proteovir.utils.Mask;
 
+import ij.ImageListener;
 import ij.ImagePlus;
 import ij.Prefs;
 import ij.WindowManager;
@@ -23,15 +24,21 @@ import ij.gui.Roi;
 import ij.gui.RoiListener;
 import ij.plugin.OverlayLabels;
 
-public class RoiManagerIJ implements RoiManagerConsumer, RoiListener {
+public class RoiManagerIJ implements RoiManagerConsumer, RoiListener, ImageListener {
 	
 	private ImagePlus imp;
+	
+	private int currentFrame;
+	
+	private int currentSlice;
 	
 	private boolean isDragging = false;
 	
 	private boolean isModifying = false;
 		
 	private Roi modRoi;
+	
+	private List<Mask> maskList;
 	
 	private List<Roi> roiList;
 	
@@ -41,12 +48,15 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener {
 	
 	public RoiManagerIJ() {
 		Roi.addRoiListener(this);
+		ImagePlus.addImageListener(this);
 	}
 	
 	public void setImage(Object imp) {
 		if (imp.equals(this.imp))
 			return;
 		this.imp = (ImagePlus) imp;
+		this.currentFrame = this.imp.getFrame() - 1;
+		this.currentSlice = this.imp.getCurrentSlice() - 1;
 		this.imp.getCanvas().addMouseMotionListener(new MouseMotionListener() {
 
 			@Override
@@ -81,12 +91,18 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener {
 
 	public void setRois(List<Mask> rois) {
 		Overlay overlay = newOverlay();
+		this.maskList = rois;
 		roiList = new ArrayList<Roi>();
+		int currentSlice = imp.getCurrentSlice() - 1;
+		if (currentSlice == 0)
+			currentSlice = imp.getFrame() - 1;
 		for (Mask mm : rois) {
 			PolygonRoi roi = new PolygonRoi(mm.getContour(), PolygonRoi.POLYGON);
 			roi.setName(mm.getName());
-			overlay.add(roi);
 			roiList.add(roi);
+			if (mm.getSlice() != currentSlice)
+				continue;
+			overlay.add(roi);
 		}
 		//imp.deleteRoi();
 		setOverlay(overlay);
@@ -94,16 +110,20 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener {
 
 	public void setRois(List<Mask> rois, int ind) {
 		ImagePlus imp = WindowManager.getCurrentImage();
+		this.maskList = rois;
 		Overlay overlay = newOverlay();
 		int i = 0;
 		roiList = new ArrayList<Roi>();
+		int currentSlice = imp.getCurrentSlice() - 1;
+		if (currentSlice == 0)
+			currentSlice = imp.getFrame() - 1;
 		for (Mask mm : rois) {
 			PolygonRoi roi = new PolygonRoi(mm.getContour(), PolygonRoi.POLYGON);
 			roi.setName(mm.getName());
 			roiList.add(roi);
-			if (i == ind) {
+			if (i == ind && mm.getSlice() == currentSlice) {
 				imp.setRoi(roi);
-			} else {
+			} else if (mm.getSlice() == currentSlice) {
 				overlay.add(roi);
 			}
 			i ++;
@@ -120,9 +140,14 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener {
 			return;
 		}
 		Roi setRoi = null;
-		for (Roi roi : this.roiList) {
+		for (int i = 0; i < this.roiList.size(); i ++) {
+			Roi roi = this.roiList.get(i);
 			if (roi.getName().equals(mm.getName())) {
 				setRoi = roi;
+				this.currentFrame = this.maskList.get(i).getFrame();
+				this.currentSlice = this.maskList.get(i).getSlice();
+				imp.setPosition(0, currentSlice + 1, currentFrame + 1);
+				this.setRois(maskList);
 				break;
 			}
 		}
@@ -194,6 +219,17 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener {
 	}
 
 	@Override
+	public void imageUpdated(ImagePlus imp) {
+		if (imp.getID() == this.imp.getID() 
+				&& (imp.getCurrentSlice() - 1 != this.currentSlice || imp.getFrame() - 1 != this.currentFrame)) {
+			this.setRois(maskList);
+			this.currentSlice = imp.getCurrentSlice() - 1;
+			this.currentFrame = imp.getFrame() - 1;
+			this.imp.deleteRoi();
+		}
+	}
+
+	@Override
 	public void roiModified(ImagePlus imp, int id) {
 		if (imp == null || !imp.equals(this.imp))
 			return;
@@ -223,5 +259,13 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener {
 	public void setSelectedCallback(Consumer<Integer> selectedCallback) {
 		this.selectedCallback = selectedCallback;
 		
+	}
+
+	@Override
+	public void imageOpened(ImagePlus imp) {
+	}
+
+	@Override
+	public void imageClosed(ImagePlus imp) {
 	}
 }
