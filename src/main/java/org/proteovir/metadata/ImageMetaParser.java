@@ -8,12 +8,15 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 public class ImageMetaParser {
 
     // Parsed metadata fields
-    final private double tilePosX;
-    final private double tilePosY;
+	final private int numTiles;
+    final private double[] tilePosX;
+    final private double[] tilePosY;
     final private double tileDimX;
     final private double tileDimY;
     final private double pixelSizeX;
@@ -64,6 +67,7 @@ public class ImageMetaParser {
         String posY = (String) xpath.evaluate(String.format(exprPosX, "PosY"), doc, XPathConstants.STRING);
         
 
+
         // Unit conversion factors
         double posFac, dimFac;
         switch (unit) {
@@ -77,10 +81,29 @@ public class ImageMetaParser {
             default:
                 throw new IllegalArgumentException("Unsupported unit: " + unit);
         }
+        NodeList tileNodes = (NodeList) xpath.evaluate(
+    	    "/Data/Image/Attachment[@Name='TileScanInfo']/Tile",
+    	    doc,
+    	    XPathConstants.NODESET
+    	);
 
-        // Populate fields
-        this.tilePosX = parseCsn(posX) * posFac;
-        this.tilePosY = parseCsn(posY) * posFac;
+    	if (tileNodes == null || tileNodes.getLength() == 0) {
+    	    throw new IllegalStateException("No <Tile> elements found in TileScanInfo");
+    	}
+
+    	this.numTiles = tileNodes.getLength();
+    	this.tilePosX = new double[numTiles];
+    	this.tilePosY = new double[numTiles];
+
+    	for (int i = 0; i < numTiles; i++) {
+    	    Element tile = (Element) tileNodes.item(i);
+
+    	    double posXm = parseCsn(tile.getAttribute("PosX")); // meters
+    	    double posYm = parseCsn(tile.getAttribute("PosY")); // meters
+
+    	    this.tilePosX[i] = posXm * posFac;
+    	    this.tilePosY[i] = posYm * posFac;
+    	}
         
         double lenX = parseCsn(lenXStr);           // in µm from XML
         double lenY = parseCsn(lenYStr);           // in µm from XML
@@ -100,8 +123,8 @@ public class ImageMetaParser {
     }
 
     // Getters for all metadata fields
-    public double getTilePosX() { return tilePosX; }
-    public double getTilePosY() { return tilePosY; }
+    public double[] getTilePosX() { return tilePosX; }
+    public double[] getTilePosY() { return tilePosY; }
     public double getTileDimX() { return tileDimX; }
     public double getTileDimY() { return tileDimY; }
     public double getPixelSizeX() { return pixelSizeX; }
@@ -116,27 +139,9 @@ public class ImageMetaParser {
                 tilePosX, tilePosY, tileDimX, tileDimY, pixelSizeX, pixelSizeY, nbPixelsX, nbPixelsY);
     }
 
-    // CLI entry
     public static void main(String[] args) {
-        if (args.length < 2) {
-            System.out.println("Usage: java ImageMetaParser --imageFile <path> [--unit <unit>]");
-            return;
-        }
-        String imageFile = null;
+        String imageFile = "/home/carlos/Pictures/proteovir/2025.10.7/MetaData/Project001_S1_Properties.xml";
         String unit = "µm";
-        for (int i = 0; i < args.length; i++) {
-            switch (args[i]) {
-                case "--imageFile":
-                    imageFile = args[++i]; break;
-                case "--unit":
-                    unit = args[++i]; break;
-                default:
-                    System.err.println("Unknown argument: " + args[i]); return;
-            }
-        }
-        if (imageFile == null) {
-            System.err.println("Error: --imageFile is required"); return;
-        }
         try {
             new ImageMetaParser(imageFile, unit);
         } catch (Exception e) {
