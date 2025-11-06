@@ -80,10 +80,6 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
     
     private int slice = 0;
     
-    private int samjFrame = -1;
-    
-    private int samjSlice = -1;
-    
     /**
 	 * Counter of the ROIs created
 	 */
@@ -312,8 +308,8 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 						samj = new SAM2Tiny();
 					boolean isColorRGB = imp.getType() == ImagePlus.COLOR_RGB;
 					RandomAccessibleInterval<?> image = ImageJFunctions.wrap(isColorRGB ? CompositeConverter.makeComposite(imp) : imp);
-					this.samjSlice = imp.getCurrentSlice() - 1;
-					this.samjFrame= imp.getFrame() - 1;
+					int samjSlice = imp.getCurrentSlice() - 1;
+					int samjFrame= imp.getFrame() - 1;
 					if (imp.getNSlices() > 1 && imp.getNChannels() > 1 && imp.getNFrames() > 1)
 						image = Views.hyperSlice(Views.hyperSlice(image, 4, samjFrame), 3, samjSlice);
 					else if (imp.getNSlices() > 1 && imp.getNFrames() > 1)
@@ -378,7 +374,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 							}
 							List<Mask> masks = cellpose.inferenceContours(Cast.unchecked(Collections.singletonList(inp)), si, fi);
 							roiManager.setImage(imp);
-							addToRoiManager(masks, "seg", "cellpose");
+							SwingUtilities.invokeLater(() -> addToRoiManager(masks, "seg", "cellpose"));
 						}
 					}
 					guiAfterCellpose(true, samj);
@@ -502,7 +498,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		int resNo = 1;
 		List<Mask> masks = new ArrayList<Mask>();
 		for (Mask m : polys) {
-			m.setName(promptsCreatedCnt + "." + (resNo ++) + "_"+promptShape + "_" + modelName);
+			m.setName(promptsCreatedCnt + "." + (resNo ++) + "_" + promptShape + "_" + modelName);
 			masks.add(m);
 		}
 		Command command = new AddRoiCommand(roiManager, masks);
