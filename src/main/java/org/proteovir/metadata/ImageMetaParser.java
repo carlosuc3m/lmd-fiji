@@ -90,8 +90,8 @@ public class ImageMetaParser {
         this.tileDimY  = lenY * dimFac;
         this.nbPixelsX = nX;
         this.nbPixelsY = nY;
-        this.pixelSizeX = this.tileDimX / this.nbPixelsX;
-        this.pixelSizeY = this.tileDimY / this.nbPixelsY;
+        this.pixelSizeX = this.tileDimX / (this.nbPixelsX - 1);
+        this.pixelSizeY = this.tileDimY / (this.nbPixelsY - 1);
     }
 
     // Comma-separated number parser
