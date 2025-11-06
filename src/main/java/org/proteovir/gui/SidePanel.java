@@ -76,6 +76,14 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
     
     private LMDCellpose cellpose;
     
+    private int frame = 0;
+    
+    private int slice = 0;
+    
+    private int samjFrame = -1;
+    
+    private int samjSlice = -1;
+    
     /**
 	 * Counter of the ROIs created
 	 */
@@ -302,20 +310,20 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 						samj = new SAM2Tiny();
 					boolean isColorRGB = imp.getType() == ImagePlus.COLOR_RGB;
 					RandomAccessibleInterval<?> image = ImageJFunctions.wrap(isColorRGB ? CompositeConverter.makeComposite(imp) : imp);
-					int currentSlice = imp.getCurrentSlice() - 1;
-					int currentFrame = imp.getFrame() - 1;
+					this.samjSlice = imp.getCurrentSlice() - 1;
+					this.samjFrame= imp.getFrame() - 1;
 					if (imp.getNSlices() > 1 && imp.getNChannels() > 1 && imp.getNFrames() > 1)
-						image = Views.hyperSlice(Views.hyperSlice(image, 4, currentFrame), 3, currentSlice);
+						image = Views.hyperSlice(Views.hyperSlice(image, 4, samjFrame), 3, samjSlice);
 					else if (imp.getNSlices() > 1 && imp.getNFrames() > 1)
-						image = Views.hyperSlice(Views.hyperSlice(image, 3, currentFrame), 2, currentSlice);
+						image = Views.hyperSlice(Views.hyperSlice(image, 3, samjFrame), 2, samjSlice);
 					else if (imp.getNSlices() > 1 && imp.getNChannels() > 1)
-						image = Views.hyperSlice(image, 3, currentSlice);
+						image = Views.hyperSlice(image, 3, samjSlice);
 					else if (imp.getNFrames() > 1 && imp.getNChannels() > 1)
-						image = Views.hyperSlice(image, 3, currentFrame);
+						image = Views.hyperSlice(image, 3, samjFrame);
 					else if (imp.getNSlices() > 1)
-						image = Views.hyperSlice(image, 2, currentSlice);
+						image = Views.hyperSlice(image, 2, samjSlice);
 					else if (imp.getNFrames() > 1)
-						image = Views.hyperSlice(image, 2, currentFrame);
+						image = Views.hyperSlice(image, 2, samjFrame);
 					samj.setImage(Cast.unchecked(image), LOGGER);
 					samj.setReturnOnlyBiggest(true);
 					roiManager.setImage(imp);
@@ -560,6 +568,33 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	}
 	
 	@Override
+	public void imageUpdated(ImagePlus imp) {
+		if (imp.getID() != this.imp.getID())
+			return;
+		int currentSlice = imp.getCurrentSlice() - 1;
+		int currentFrame = imp.getFrame() - 1;
+		if ((currentSlice != slice || currentFrame != frame) && this.samjFrame == currentFrame && this.samjSlice == currentSlice) {
+			this.activationBtn.setSelected(false);
+			this.activationBtn.setEnabled(true);
+			this.samjBtn.setEnabled(false);
+			this.samjBtn.setSelected(true);
+			activationLabel.setText(ACTIVATE_TO_SEGMENT);
+			alreadyFocused = true;
+			imageGUI.setInfoState(false);
+		} else if (slice == samjSlice && frame == samjFrame && (currentSlice != slice || currentFrame != frame)) {
+			this.activationBtn.setSelected(false);
+			this.activationBtn.setEnabled(false);
+			this.samjBtn.setEnabled(true);
+			this.samjBtn.setSelected(false);
+			activationLabel.setText(SAMJ);
+			alreadyFocused = false;
+			imageGUI.setInfoState(true);
+		}
+		this.slice = currentSlice;
+		this.frame = currentFrame;
+	}
+	
+	@Override
 	public void mouseClicked(MouseEvent e) {
 		if (e.getSource() == this.roiManager.getList() && activationBtn.isSelected()) {
 			this.activationBtn.setSelected(false);
@@ -623,9 +658,6 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	
 	@Override
 	public void mousePressed(MouseEvent e) {
-	}
-	@Override
-	public void imageUpdated(ImagePlus imp) {
 	}
 	@Override
 	public void mouseEntered(MouseEvent e) {		
