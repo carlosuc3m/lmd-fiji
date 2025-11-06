@@ -198,8 +198,8 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
 	public Point getAbsCalPoint() {
 		if (calibrationPoint == null || meta == null)
 			return new Point(0, 0);
-		int x = (int) (Math.round(meta.getTilePosX() / meta.getPixelSizeX()) + calibrationPoint[0]);
-		int y = (int) (Math.round(meta.getTilePosY() / meta.getPixelSizeY()) + calibrationPoint[1]);
+		int x = (int) (Math.round(meta.getTilePosX() / meta.getPixelSizeX()) - meta.getNbPixelsX() / 2 + calibrationPoint[0]);
+		int y = (int) (Math.round(meta.getTilePosY() / meta.getPixelSizeY()) - meta.getNbPixelsY() / 2 + calibrationPoint[1]);
 		return new Point(x, y);
 	}
 	
