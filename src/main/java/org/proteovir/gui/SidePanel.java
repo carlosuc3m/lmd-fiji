@@ -345,37 +345,42 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 						cellpose = LMDCellpose.create();
 					if (!cellpose.isLoaded())
 						cellpose.loadModel();
-					if (diameterVal.getText() != null && !diameterVal.getText().equals(""))
-						cellpose.setDiameter(Integer.parseInt(diameterVal.getText()));
 					boolean isColorRGB = imp.getType() == ImagePlus.COLOR_RGB;
 					RandomAccessibleInterval<?> image = ImageJFunctions.wrap(isColorRGB ? CompositeConverter.makeComposite(imp) : imp);
 					int nFrames = imp.getNFrames();
 					int nSlices = imp.getNSlices();
 					int nChannels = imp.getNChannels();
-					List<Mask> totalMasks = new ArrayList<Mask>();
 					for (int si = 0; si < nSlices; si ++) {
 						for (int fi = 0; fi < nFrames; fi ++) {
+							if (diameterVal.getText() != null && !diameterVal.getText().equals(""))
+								cellpose.setDiameter(Integer.parseInt(diameterVal.getText()));
+							RandomAccessibleInterval<?> inp;
 							if (nChannels > 1 && nSlices > 1 && nFrames > 1) {
-								image = Views.hyperSlice(Views.hyperSlice(image, 4, fi), 3, si);
+								inp = Views.hyperSlice(Views.hyperSlice(image, 4, fi), 3, si);
+								inp = Utils.rearangeAxes(Cast.unchecked(inp), new int[] {1, 0});
 							} else if (nSlices > 1 && nFrames > 1) {
-								image = Views.hyperSlice(Views.hyperSlice(image, 3, fi), 2, si);
+								inp = Views.hyperSlice(Views.hyperSlice(image, 3, fi), 2, si);
+								inp = Utils.rearangeAxes(Cast.unchecked(inp), new int[] {1, 0});
 							} else if (nChannels > 1 && nSlices > 1) {
-								image = Views.hyperSlice(image, 3, si);
+								inp = Views.hyperSlice(image, 3, si);
+								inp = Utils.rearangeAxes(Cast.unchecked(inp), new int[] {1, 0});
 							} else if (nChannels > 1 && nFrames > 1) {
-								image = Views.hyperSlice(image, 3, fi);
+								inp = Views.hyperSlice(image, 3, fi);
+								inp = Utils.rearangeAxes(Cast.unchecked(inp), new int[] {1, 0});
 							} else if (nSlices > 1) {
-								image = Views.hyperSlice(image, 2, si);
+								inp = Views.hyperSlice(image, 2, si);
+								inp = Utils.rearangeAxes(Cast.unchecked(inp), new int[] {1, 0});
 							} else if (nFrames > 1) {
-								image = Views.hyperSlice(image, 2, fi);
+								inp = Views.hyperSlice(image, 2, fi);
+								inp = Utils.rearangeAxes(Cast.unchecked(inp), new int[] {1, 0});
+							} else {
+								inp = Utils.rearangeAxes(Cast.unchecked(image), new int[] {1, 0});
 							}
-							image = Utils.rearangeAxes(Cast.unchecked(image), new int[] {1, 0});
-							List<Mask> masks = cellpose.inferenceContours(Cast.unchecked(Collections.singletonList(image)), si, fi);
+							List<Mask> masks = cellpose.inferenceContours(Cast.unchecked(Collections.singletonList(inp)), si, fi);
 							roiManager.setImage(imp);
 							addToRoiManager(masks, "seg", "cellpose");
-							totalMasks.addAll(masks);
 						}
 					}
-					addToRoiManager(totalMasks, "seg", "cellpose");
 					guiAfterCellpose(true, samj);
 				} catch (IOException | InterruptedException | RuntimeException | LoadModelException | RunModelException e1) {
 					e1.printStackTrace();

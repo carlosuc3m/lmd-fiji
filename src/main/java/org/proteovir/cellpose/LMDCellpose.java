@@ -88,7 +88,6 @@ public class LMDCellpose extends Cellpose {
 	
 	private List<Mask> runCode(String code, int slice, int frame) 
 	throws RunModelException {
-			slice = 0;
 		List<Mask> masks;
 		try {
 			Task task = this.getPythonSerice().task(code);
