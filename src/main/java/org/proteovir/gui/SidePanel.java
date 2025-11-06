@@ -60,9 +60,9 @@ import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.Point;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.util.Cast;
+import net.imglib2.view.Views;
 
 public class SidePanel extends SidePanelGUI implements ActionListener, ImageListener, MouseListener, KeyListener, IJEventListener {
 
@@ -301,7 +301,21 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 					if (samj == null || !samj.isLoaded())
 						samj = new SAM2Tiny();
 					boolean isColorRGB = imp.getType() == ImagePlus.COLOR_RGB;
-					Img<?> image = ImageJFunctions.wrap(isColorRGB ? CompositeConverter.makeComposite(imp) : imp);
+					RandomAccessibleInterval<?> image = ImageJFunctions.wrap(isColorRGB ? CompositeConverter.makeComposite(imp) : imp);
+					int currentSlice = imp.getCurrentSlice() - 1;
+					int currentFrame = imp.getFrame() - 1;
+					if (imp.getNSlices() > 1 && imp.getNChannels() > 1 && imp.getNFrames() > 1)
+						image = Views.hyperSlice(Views.hyperSlice(image, 4, currentFrame), 3, currentSlice);
+					else if (imp.getNSlices() > 1 && imp.getNFrames() > 1)
+						image = Views.hyperSlice(Views.hyperSlice(image, 3, currentFrame), 2, currentSlice);
+					else if (imp.getNSlices() > 1 && imp.getNChannels() > 1)
+						image = Views.hyperSlice(image, 3, currentSlice);
+					else if (imp.getNFrames() > 1 && imp.getNChannels() > 1)
+						image = Views.hyperSlice(image, 3, currentFrame);
+					else if (imp.getNSlices() > 1)
+						image = Views.hyperSlice(image, 2, currentSlice);
+					else if (imp.getNFrames() > 1)
+						image = Views.hyperSlice(image, 2, currentFrame);
 					samj.setImage(Cast.unchecked(image), LOGGER);
 					samj.setReturnOnlyBiggest(true);
 					roiManager.setImage(imp);
