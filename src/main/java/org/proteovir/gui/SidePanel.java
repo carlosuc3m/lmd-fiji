@@ -589,6 +589,11 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 			activationLabel.setText(SAMJ);
 			alreadyFocused = false;
 			imageGUI.setInfoState(true);
+			if (samj != null) {
+				this.samj.closeProcess();
+				samjSlice = -1;
+				samjFrame = -1;
+			}
 		}
 		this.slice = currentSlice;
 		this.frame = currentFrame;
