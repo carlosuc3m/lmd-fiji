@@ -341,17 +341,40 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 				try {
 					if (cellpose == null || !cellpose.isLoaded())
 						cellpose = LMDCellpose.create();
-					boolean isColorRGB = imp.getType() == ImagePlus.COLOR_RGB;
-					RandomAccessibleInterval<?> image = ImageJFunctions.wrap(isColorRGB ? CompositeConverter.makeComposite(imp) : imp);
-					image = Utils.rearangeAxes(Cast.unchecked(image), new int[] {1, 0});
 					if (!cellpose.isLoaded())
 						cellpose.loadModel();
 					if (diameterVal.getText() != null && !diameterVal.getText().equals(""))
 						cellpose.setDiameter(Integer.parseInt(diameterVal.getText()));
-					List<Mask> masks = cellpose.inferenceContours(Cast.unchecked(Collections.singletonList(image)));
-					roiManager.setImage(imp);
+					boolean isColorRGB = imp.getType() == ImagePlus.COLOR_RGB;
+					RandomAccessibleInterval<?> image = ImageJFunctions.wrap(isColorRGB ? CompositeConverter.makeComposite(imp) : imp);
+					int nFrames = imp.getNFrames();
+					int nSlices = imp.getNSlices();
+					int nChannels = imp.getNChannels();
+					List<Mask> totalMasks = new ArrayList<Mask>();
+					for (int si = 0; si < nSlices; si ++) {
+						for (int fi = 0; fi < nFrames; fi ++) {
+							if (nChannels > 1 && nSlices > 1 && nFrames > 1) {
+								image = Views.hyperSlice(Views.hyperSlice(image, 4, fi), 3, si);
+							} else if (nSlices > 1 && nFrames > 1) {
+								image = Views.hyperSlice(Views.hyperSlice(image, 3, fi), 2, si);
+							} else if (nChannels > 1 && nSlices > 1) {
+								image = Views.hyperSlice(image, 3, si);
+							} else if (nChannels > 1 && nFrames > 1) {
+								image = Views.hyperSlice(image, 3, fi);
+							} else if (nSlices > 1) {
+								image = Views.hyperSlice(image, 2, si);
+							} else if (nFrames > 1) {
+								image = Views.hyperSlice(image, 2, fi);
+							}
+							image = Utils.rearangeAxes(Cast.unchecked(image), new int[] {1, 0});
+							List<Mask> masks = cellpose.inferenceContours(Cast.unchecked(Collections.singletonList(image)), si, fi);
+							roiManager.setImage(imp);
+							addToRoiManager(masks, "seg", "cellpose");
+							totalMasks.addAll(masks);
+						}
+					}
+					addToRoiManager(totalMasks, "seg", "cellpose");
 					guiAfterCellpose(true, samj);
-					addToRoiManager(masks, "seg", "cellpose");
 				} catch (IOException | InterruptedException | RuntimeException | LoadModelException | RunModelException e1) {
 					e1.printStackTrace();
 					guiAfterCellpose(false, samj);
@@ -569,7 +592,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	
 	@Override
 	public void imageUpdated(ImagePlus imp) {
-		if (imp.getID() != this.imp.getID())
+		if (this.imp == null || imp.getID() != this.imp.getID())
 			return;
 		int currentSlice = imp.getCurrentSlice() - 1;
 		int currentFrame = imp.getFrame() - 1;

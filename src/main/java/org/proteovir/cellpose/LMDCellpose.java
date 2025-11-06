@@ -76,24 +76,18 @@ public class LMDCellpose extends Cellpose {
 	 *             if there is an error in the execution of the model
 	 */
 	public <T extends RealType<T> & NativeType<T>>
-	List<Mask> inferenceContours(List<RandomAccessibleInterval<T>> inputs) throws RunModelException {
+	List<Mask> inferenceContours(List<RandomAccessibleInterval<T>> inputs, int slice, int frame) throws RunModelException {
 
 		if (!loaded)
 			throw new RuntimeException("Please load the model first.");
 		List<String> names = IntStream.range(0, inputs.size())
 				.mapToObj(i -> "var_" + UUID.randomUUID().toString().replace("-", "_")).collect(Collectors.toList());
 		String code = createInputsCode(inputs, names);
-		return runCode(code);
+		return runCode(code, slice, frame);
 	}
 	
-	private List<Mask> runCode(String code) 
+	private List<Mask> runCode(String code, int slice, int frame) 
 	throws RunModelException {
-		int slice;
-		if (imp.getNSlices() > 1)
-			slice = imp.getCurrentSlice() - 1;
-		else if (imp.getNFrames() > 1)
-			slice = imp.getFrame() - 1;
-		else
 			slice = 0;
 		List<Mask> masks;
 		try {
@@ -116,7 +110,7 @@ public class LMDCellpose extends Cellpose {
 				int[] xArr = contours_x.next().stream().mapToInt(Number::intValue).toArray();
 				int[] yArr = contours_y.next().stream().mapToInt(Number::intValue).toArray();
 				long[] rle = rles.next().stream().mapToLong(Number::longValue).toArray();
-				masks.add(Mask.build(new Polygon(xArr, yArr, xArr.length), rle));
+				masks.add(Mask.build(new Polygon(xArr, yArr, xArr.length), rle, slice, frame));
 			}
 			cleanShm();
 		} catch (IOException | InterruptedException e) {

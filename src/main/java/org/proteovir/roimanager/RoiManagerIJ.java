@@ -93,14 +93,17 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener, ImageListe
 		Overlay overlay = newOverlay();
 		this.maskList = rois;
 		roiList = new ArrayList<Roi>();
-		int currentSlice = imp.getCurrentSlice() - 1;
-		if (currentSlice == 0)
-			currentSlice = imp.getFrame() - 1;
+		int slice = 0;
+		int frame = 0;
+		if (imp != null) {
+			slice = imp.getCurrentSlice() - 1;
+			frame = imp.getFrame() - 1;
+		}
 		for (Mask mm : rois) {
 			PolygonRoi roi = new PolygonRoi(mm.getContour(), PolygonRoi.POLYGON);
 			roi.setName(mm.getName());
 			roiList.add(roi);
-			if (mm.getSlice() != currentSlice)
+			if (mm.getSlice() != slice || mm.getFrame() != frame)
 				continue;
 			overlay.add(roi);
 		}
@@ -114,16 +117,19 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener, ImageListe
 		Overlay overlay = newOverlay();
 		int i = 0;
 		roiList = new ArrayList<Roi>();
-		int currentSlice = imp.getCurrentSlice() - 1;
-		if (currentSlice == 0)
-			currentSlice = imp.getFrame() - 1;
+		int slice = 0;
+		int frame = 0;
+		if (imp != null) {
+			slice = imp.getCurrentSlice() - 1;
+			frame = imp.getFrame() - 1;
+		}
 		for (Mask mm : rois) {
 			PolygonRoi roi = new PolygonRoi(mm.getContour(), PolygonRoi.POLYGON);
 			roi.setName(mm.getName());
 			roiList.add(roi);
-			if (i == ind && mm.getSlice() == currentSlice) {
+			if (i == ind && mm.getSlice() == slice && mm.getFrame() == frame) {
 				imp.setRoi(roi);
-			} else if (mm.getSlice() == currentSlice) {
+			} else if (mm.getSlice() == slice && mm.getFrame() == frame) {
 				overlay.add(roi);
 			}
 			i ++;
@@ -220,7 +226,7 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener, ImageListe
 
 	@Override
 	public void imageUpdated(ImagePlus imp) {
-		if (imp.getID() == this.imp.getID() 
+		if (this.imp != null && imp.getID() == this.imp.getID() 
 				&& (imp.getCurrentSlice() - 1 != this.currentSlice || imp.getFrame() - 1 != this.currentFrame)) {
 			this.setRois(maskList);
 			this.currentSlice = imp.getCurrentSlice() - 1;
