@@ -55,8 +55,6 @@ public class ImageMetaParser {
         // 4. Evaluate
         String lenXStr = (String) xpath.evaluate(String.format(exprX, "Length"), doc, XPathConstants.STRING);
         String lenYStr = (String) xpath.evaluate(String.format(exprY, "Length"), doc, XPathConstants.STRING);
-        String voxelXStr = (String) xpath.evaluate(String.format(exprX, "Voxel"), doc, XPathConstants.STRING);
-        String voxelYStr = (String) xpath.evaluate(String.format(exprY, "Voxel"), doc, XPathConstants.STRING);
         String numXStr = (String) xpath.evaluate(String.format(exprX, "NumberOfElements"), doc, XPathConstants.STRING);
         String numYStr = (String) xpath.evaluate(String.format(exprY, "NumberOfElements"), doc, XPathConstants.STRING);
 
@@ -83,12 +81,17 @@ public class ImageMetaParser {
         // Populate fields
         this.tilePosX = parseCsn(posX) * posFac;
         this.tilePosY = parseCsn(posY) * posFac;
-        this.tileDimX = parseCsn(lenXStr) * dimFac;
-        this.tileDimY = parseCsn(lenYStr) * dimFac;
-        this.pixelSizeX = parseCsn(voxelXStr) * dimFac;
-        this.pixelSizeY = parseCsn(voxelYStr) * dimFac;
-        this.nbPixelsX = (int) parseCsn(numXStr);
-        this.nbPixelsY = (int) parseCsn(numYStr);
+        
+        double lenX = parseCsn(lenXStr);           // in µm from XML
+        double lenY = parseCsn(lenYStr);           // in µm from XML
+        int nX      = (int) parseCsn(numXStr);
+        int nY      = (int) parseCsn(numYStr);
+        this.tileDimX  = lenX * dimFac;           // e.g. µm → µm, mm, or m
+        this.tileDimY  = lenY * dimFac;
+        this.nbPixelsX = nX;
+        this.nbPixelsY = nY;
+        this.pixelSizeX = this.tileDimX / this.nbPixelsX;
+        this.pixelSizeY = this.tileDimY / this.nbPixelsY;
     }
 
     // Comma-separated number parser
