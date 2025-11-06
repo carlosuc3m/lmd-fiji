@@ -12,8 +12,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.proteovir.utils.Constants;
+import org.proteovir.utils.Mask;
 
-import ai.nets.samj.annotation.Mask;
 import ai.nets.samj.models.PythonMethods;
 import io.bioimage.modelrunner.apposed.appose.Types;
 import io.bioimage.modelrunner.apposed.appose.Service.Task;
@@ -88,6 +88,13 @@ public class LMDCellpose extends Cellpose {
 	
 	private List<Mask> runCode(String code) 
 	throws RunModelException {
+		int slice;
+		if (imp.getNSlices() > 1)
+			slice = imp.getCurrentSlice() - 1;
+		else if (imp.getNFrames() > 1)
+			slice = imp.getFrame() - 1;
+		else
+			slice = 0;
 		List<Mask> masks;
 		try {
 			Task task = this.getPythonSerice().task(code);

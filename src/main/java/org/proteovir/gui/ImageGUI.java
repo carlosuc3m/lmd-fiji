@@ -161,11 +161,11 @@ public class ImageGUI extends JPanel implements DocumentListener {
         y = labelH + imH;
 	}
 
-	public Polygon toAbsCoord(Polygon pol) {
+	public Polygon toAbsCoord(Polygon pol, int slice) {
 		if (!imSet || meta == null)
 			return new Polygon(new int[0], new int[0], 0);
-		int offsetX = (int) Math.round(meta.getTilePosX() / meta.getPixelSizeX()) - meta.getNbPixelsX() / 2;
-		int offsetY = (int) Math.round(meta.getTilePosY() / meta.getPixelSizeY()) - meta.getNbPixelsY() / 2;
+		int offsetX = (int) Math.round(meta.getTilePosX()[slice] / meta.getPixelSizeX()) - meta.getNbPixelsX() / 2;
+		int offsetY = (int) Math.round(meta.getTilePosY()[slice] / meta.getPixelSizeY()) - meta.getNbPixelsY() / 2;
 		int[] x = pol.xpoints;
 		int[] y = pol.ypoints;
 		for (int i = 0; i < x.length; i ++) {

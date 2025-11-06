@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import ai.nets.samj.annotation.Mask;
+import org.proteovir.utils.Mask;
+
 
 public interface RoiManagerConsumer {
 

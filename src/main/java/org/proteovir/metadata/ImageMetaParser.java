@@ -140,7 +140,7 @@ public class ImageMetaParser {
     }
 
     public static void main(String[] args) {
-        String imageFile = "/home/carlos/Pictures/proteovir/2025.10.7/MetaData/Project001_S1_Properties.xml";
+        String imageFile = "/home/carlos/Pictures/proteovir/2025.10.7/MetaData/ref1_ref1_Properties.xml";
         String unit = "µm";
         try {
             new ImageMetaParser(imageFile, unit);

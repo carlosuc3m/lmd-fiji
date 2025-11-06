@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.proteovir.roimanager.RoiManager;
+import org.proteovir.utils.Mask;
 
-import ai.nets.samj.annotation.Mask;
 
 public class AddRoiCommand implements Command {
 	private RoiManager roiManager;

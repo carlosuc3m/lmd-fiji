@@ -23,8 +23,7 @@ import org.proteovir.roimanager.commands.Command;
 import org.proteovir.roimanager.commands.DeleteRoiCommand;
 import org.proteovir.roimanager.commands.ModifyRoiCommand;
 import org.proteovir.roimanager.utils.PolygonUtils;
-
-import ai.nets.samj.annotation.Mask;
+import org.proteovir.utils.Mask;
 
 
 public class RoiManager extends RoiManagerGUI implements MouseWheelListener, ListSelectionListener, MouseListener, ActionListener, ItemListener {

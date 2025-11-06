@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Stack;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -37,8 +38,8 @@ import org.proteovir.roimanager.RoiManagerConsumer;
 import org.proteovir.roimanager.commands.AddRoiCommand;
 import org.proteovir.roimanager.commands.Command;
 import org.proteovir.roimanager.commands.DeleteRoiCommand;
+import org.proteovir.utils.Mask;
 
-import ai.nets.samj.annotation.Mask;
 import ai.nets.samj.communication.model.SAM2Tiny;
 import ai.nets.samj.models.AbstractSamJ;
 import ai.nets.samj.ui.SAMJLogger;
@@ -369,8 +370,19 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 	}
 	
 	private void submitRectPrompt(Interval rectInterval) {
+		int slice;
+		if (imp.getNSlices() > 1)
+			slice = imp.getCurrentSlice() - 1;
+		else if (imp.getNFrames() > 1)
+			slice = imp.getFrame() - 1;
+		else
+			slice = 0;
 		try {
-			addToRoiManager(this.samj.fetch2dSegmentation(rectInterval), "rect", samj.getName());
+			List<ai.nets.samj.annotation.Mask> samjMask = this.samj.fetch2dSegmentation(rectInterval);
+			List<Mask> proteovirMasks = samjMask.stream()
+					.map(mm -> Mask.build(mm.getContour(), mm.rleEncoding, slice))
+					.collect(Collectors.toList());
+			addToRoiManager(proteovirMasks, "rect", samj.getName());
 		} catch (Exception ex) {
 			ex.printStackTrace();;
 		}
@@ -403,18 +415,32 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		if (this.samj == null) return;
 		if (collectedPoints.size() == 0) return;
 
+		int slice;
+		if (imp.getNSlices() > 1)
+			slice = imp.getCurrentSlice() - 1;
+		else if (imp.getNFrames() > 1)
+			slice = imp.getFrame() - 1;
+		else
+			slice = 0;
 		//TODO log.info("Image window: Processing now points, this count: "+collectedPoints.size());
 		isCollectingPoints = false;
 		imp.deleteRoi();
 		Rectangle zoomedRectangle = this.imp.getCanvas().getSrcRect();
 		try {
 			if (imp.getWidth() * imp.getHeight() > Math.pow(AbstractSamJ.MAX_ENCODED_AREA_RS, 2)
-					|| imp.getWidth() > AbstractSamJ.MAX_ENCODED_SIDE || imp.getHeight() > AbstractSamJ.MAX_ENCODED_SIDE)
-				addToRoiManager(samj.fetch2dSegmentation(collectedPoints, collecteNegPoints, zoomedRectangle),
-						(collectedPoints.size() > 1 ? "points" : "point"), samj.getName());
-			else
-				addToRoiManager(samj.fetch2dSegmentation(collectedPoints, collecteNegPoints),
-						(collectedPoints.size() > 1 ? "points" : "point"), samj.getName());
+					|| imp.getWidth() > AbstractSamJ.MAX_ENCODED_SIDE || imp.getHeight() > AbstractSamJ.MAX_ENCODED_SIDE) {
+				List<ai.nets.samj.annotation.Mask> samjMasks = samj.fetch2dSegmentation(collectedPoints, collecteNegPoints, zoomedRectangle);
+				List<Mask> proteovirMasks = samjMasks.stream()
+						.map(mm -> Mask.build(mm.getContour(), mm.rleEncoding, slice))
+						.collect(Collectors.toList());
+				addToRoiManager(proteovirMasks, (collectedPoints.size() > 1 ? "points" : "point"), samj.getName());
+			} else {
+				List<ai.nets.samj.annotation.Mask> samjMasks = samj.fetch2dSegmentation(collectedPoints, collecteNegPoints);
+				List<Mask> proteovirMasks = samjMasks.stream()
+						.map(mm -> Mask.build(mm.getContour(), mm.rleEncoding, slice))
+						.collect(Collectors.toList());
+				addToRoiManager(proteovirMasks, (collectedPoints.size() > 1 ? "points" : "point"), samj.getName());
+			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -450,7 +476,7 @@ public class SidePanel extends SidePanelGUI implements ActionListener, ImageList
 		calPoints.add(thirdCalibration.getAbsCalPoint());
 		generator.setCalibrationPoints(calPoints);
 		for (Mask mm : masks) {
-			Polygon pol = imageGUI.toAbsCoord(mm.getContour());
+			Polygon pol = imageGUI.toAbsCoord(mm.getContour(), mm.getSlice());
 			generator.addRoi(pol);
 		}
 		String xmltext = generator.generateXML();

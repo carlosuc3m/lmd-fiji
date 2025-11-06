@@ -43,6 +43,7 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
     private ImagePlus imp;
     private ImageMetaParser meta;
     private int[] calibrationPoint;
+    private int calibrationSlice;
     private String calImage;
     
     private boolean good = false;
@@ -198,8 +199,8 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
 	public Point getAbsCalPoint() {
 		if (calibrationPoint == null || meta == null)
 			return new Point(0, 0);
-		int x = (int) (Math.round(meta.getTilePosX() / meta.getPixelSizeX()) - meta.getNbPixelsX() / 2 + calibrationPoint[0]);
-		int y = (int) (Math.round(meta.getTilePosY() / meta.getPixelSizeY()) - meta.getNbPixelsY() / 2 + calibrationPoint[1]);
+		int x = (int) (Math.round(meta.getTilePosX()[calibrationSlice] / meta.getPixelSizeX()) - meta.getNbPixelsX() / 2 + calibrationPoint[0]);
+		int y = (int) (Math.round(meta.getTilePosY()[calibrationSlice] / meta.getPixelSizeY()) - meta.getNbPixelsY() / 2 + calibrationPoint[1]);
 		return new Point(x, y);
 	}
 	
@@ -358,6 +359,11 @@ public class CalibrationPointsGUI extends JPanel implements MouseListener, Docum
 	    	Iterator<java.awt.Point> iterator = roi.iterator();
 			java.awt.Point p = iterator.next();
 			calibrationPoint = new int[] {(int) p.getX(), (int) p.getY()};
+			this.calibrationSlice = 0;
+			if (imp.getNSlices() > 1)
+				this.calibrationSlice = imp.getCurrentSlice() - 1;
+			if (imp.getNFrames() > 1)
+				this.calibrationSlice = imp.getFrame() - 1;
 	        searchMeta(imagePath.getText());
     	}
     	imp.getWindow().dispose();

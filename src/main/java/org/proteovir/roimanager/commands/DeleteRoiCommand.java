@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.proteovir.roimanager.RoiManager;
+import org.proteovir.utils.Mask;
 
-import ai.nets.samj.annotation.Mask;
 
 public class DeleteRoiCommand implements Command {
 	private RoiManager roiManager;
