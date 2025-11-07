@@ -111,6 +111,25 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener, ImageListe
 		setOverlay(overlay);
 	}
 
+	public void changeOverlay(List<Mask> rois) {
+		Overlay overlay = newOverlay();
+		int slice = 0;
+		int frame = 0;
+		if (imp != null) {
+			slice = imp.getCurrentSlice() - 1;
+			frame = imp.getFrame() - 1;
+		}
+		for (Mask mm : rois) {
+			PolygonRoi roi = new PolygonRoi(mm.getContour(), PolygonRoi.POLYGON);
+			roi.setName(mm.getName());
+			if (mm.getSlice() != slice || mm.getFrame() != frame)
+				continue;
+			overlay.add(roi);
+		}
+		//imp.deleteRoi();
+		setOverlay(overlay);
+	}
+
 	public void setRois(List<Mask> rois, int ind) {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		this.maskList = rois;
@@ -153,7 +172,7 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener, ImageListe
 				this.currentFrame = this.maskList.get(i).getFrame();
 				this.currentSlice = this.maskList.get(i).getSlice();
 				imp.setPosition(0, currentSlice + 1, currentFrame + 1);
-				this.setRois(maskList);
+				this.changeOverlay(maskList);
 				break;
 			}
 		}

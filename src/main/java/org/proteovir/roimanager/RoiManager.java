@@ -308,12 +308,10 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		if (e.getComponent().equals(this.list)) {
-			int ind = this.list.getSelectedIndex();
-			if (ind < 0)
-				return;
-			consumer.setSelected(this.rois.get(ind));
+	        int ind = this.list.locationToIndex(e.getPoint());
+	        if (ind < 0) return;
+	        consumer.setSelected(this.rois.get(ind));
 		}
-		
 	}
 
 	@Override
