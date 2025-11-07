@@ -283,6 +283,7 @@ public class ImageGUI extends JPanel implements DocumentListener {
 	
 	private synchronized void openImage(String strFile) {
 		try {
+			changeImageCallback.run();
 			imSet = false;
 			calImage = null;
             if (openImageCallback == null) {
