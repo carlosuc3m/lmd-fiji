@@ -60,6 +60,8 @@ public class ImageMetaParser {
         String lenYStr = (String) xpath.evaluate(String.format(exprY, "Length"), doc, XPathConstants.STRING);
         String numXStr = (String) xpath.evaluate(String.format(exprX, "NumberOfElements"), doc, XPathConstants.STRING);
         String numYStr = (String) xpath.evaluate(String.format(exprY, "NumberOfElements"), doc, XPathConstants.STRING);
+        String voxelXStr = (String) xpath.evaluate(String.format(exprX, "Voxel"), doc, XPathConstants.STRING);
+        String voxelYStr = (String) xpath.evaluate(String.format(exprY, "Voxel"), doc, XPathConstants.STRING);
 
         // 3. XPath expressions for X and Y lengths<Attachment Name="TileScanInfo" Application="LAS AF" FlipX="0" FlipY="0" SwapXY="0">
         String exprPosX = "/Data/Image/Attachment[@Name=\"TileScanInfo\"]/Tile/@%s";
@@ -113,8 +115,8 @@ public class ImageMetaParser {
         this.tileDimY  = lenY * dimFac;
         this.nbPixelsX = nX;
         this.nbPixelsY = nY;
-        this.pixelSizeX = this.tileDimX / (this.nbPixelsX - 1);
-        this.pixelSizeY = this.tileDimY / (this.nbPixelsY - 1);
+        this.pixelSizeX = parseCsn(voxelXStr) * dimFac;
+        this.pixelSizeY = parseCsn(voxelYStr) * dimFac;
     }
 
     // Comma-separated number parser
