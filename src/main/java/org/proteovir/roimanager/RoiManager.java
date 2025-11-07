@@ -271,6 +271,7 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 		String label = e.getActionCommand();
 		if (label==null)
 			return;
+		list.setValueIsAdjusting(true);
 		String command = label;
 		if (command.equals("Add"))
 			addRoiFromGUI();
@@ -295,6 +296,7 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 			erode();
 		else if (command.equals("Merge"))
 			merge();
+		list.setValueIsAdjusting(false);
 		
 		justClickedDelete = false;
 	}
@@ -311,7 +313,7 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 	public void mouseClicked(MouseEvent e) {
 		if (e.getComponent().equals(this.list)) {
 	        int ind = this.list.locationToIndex(e.getPoint());
-	        if (ind < 0 || ind == prevIndex) return;
+	        if (ind < 0 || ind == prevIndex || ind > this.rois.size()) return;
 	        consumer.setSelected(this.rois.get(ind));
 	        prevIndex = ind;
 		}
@@ -343,6 +345,7 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
+		boolean wasBtn = false;
 		for (JButton btn : this.btns) {
 			if (btn.getText().equals("Dilate") || btn.getText().equals("Erode") || btn.getText().equals("Simplify")
 					|| btn.getText().equals("Complicate"))
@@ -350,9 +353,11 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 			else if (btn.getText().equals("Merge"))
 				btn.setEnabled(list.getSelectedIndex()  != -1 && list.getSelectedIndices().length > 1);
 		}
+		if (e.getSource() != list && e.getSource() != listModel)
+			return;
 		if (!e.getValueIsAdjusting()) {
 	        int lastIndex = list.getLeadSelectionIndex();
-	        if (lastIndex == prevIndex)
+	        if (lastIndex == prevIndex || lastIndex < 0 || lastIndex >= this.rois.size())
 	        	return;
 	        consumer.setSelected(this.rois.get(lastIndex));
 	        prevIndex = lastIndex;
