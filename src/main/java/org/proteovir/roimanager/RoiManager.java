@@ -32,6 +32,8 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
     
     private Object image;
     
+    private int prevIndex = -1;
+    
     private RoiManagerConsumer consumer;
 
 	private Consumer<List<Mask>> exportLMDCallback;
@@ -309,8 +311,9 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 	public void mouseClicked(MouseEvent e) {
 		if (e.getComponent().equals(this.list)) {
 	        int ind = this.list.locationToIndex(e.getPoint());
-	        if (ind < 0) return;
+	        if (ind < 0 || ind == prevIndex) return;
 	        consumer.setSelected(this.rois.get(ind));
+	        prevIndex = ind;
 		}
 	}
 
@@ -346,8 +349,14 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 				btn.setEnabled(list.getSelectedIndex()  != -1 && rois.size() > 0);
 			else if (btn.getText().equals("Merge"))
 				btn.setEnabled(list.getSelectedIndex()  != -1 && list.getSelectedIndices().length > 1);
-			
 		}
+		if (!e.getValueIsAdjusting()) {
+	        int lastIndex = list.getLeadSelectionIndex();
+	        if (lastIndex == prevIndex)
+	        	return;
+	        consumer.setSelected(this.rois.get(lastIndex));
+	        prevIndex = lastIndex;
+	    }
 	}
 
 	@Override
