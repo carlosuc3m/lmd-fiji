@@ -259,7 +259,7 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 	}
 	
 	private void exportMask() {
-		
+		consumer.exportMask();
 	}
 
 	private void exportLMD() {
@@ -290,6 +290,8 @@ public class RoiManager extends RoiManagerGUI implements MouseWheelListener, Lis
 			complicate();
 		else if (command.equals("Export LMD"))
 			exportLMD();
+		else if (command.equals("Export mask"))
+			exportMask();
 		else if (command.equals("Dilate"))
 			dilate();
 		else if (command.equals("Erode"))

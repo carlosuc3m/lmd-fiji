@@ -23,6 +23,9 @@ import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.gui.RoiListener;
 import ij.plugin.OverlayLabels;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
 
 public class RoiManagerIJ implements RoiManagerConsumer, RoiListener, ImageListener {
 	
@@ -181,6 +184,16 @@ public class RoiManagerIJ implements RoiManagerConsumer, RoiListener, ImageListe
 			setRoi.setName(mm.getName());
 		}
 		imp.setRoi(setRoi, true);
+	}
+
+	@Override
+	public void exportMask() {
+		int width = imp.getWidth();
+		int height = imp.getHeight();
+		RandomAccessibleInterval<UnsignedShortType> raiMask = Mask.getMask(width, height, maskList);
+		ImagePlus impMask = ImageJFunctions.show(raiMask);
+		impMask.setTitle(imp.getTitle() + "-labeling");
+		impMask.getProcessor().setMinAndMax(0, maskList.size());
 	}
 
 	private Overlay newOverlay() {

@@ -23,4 +23,6 @@ public interface RoiManagerConsumer {
 	public void setImage(Object image);
 
 	void setSelectedCallback(Consumer<Integer> selectedCallback);
+
+	public void exportMask();
 }
